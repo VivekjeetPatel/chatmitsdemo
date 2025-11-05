@@ -8,13 +8,15 @@ interface ChatInputProps {
   onVoiceInput: () => void;
   onMediaUpload: () => void;
   placeholder?: string;
+  disabled?: boolean;
 }
 
 export const ChatInput = ({ 
   onSendMessage, 
   onVoiceInput, 
   onMediaUpload,
-  placeholder = "Say something nicer..." 
+  placeholder = "Say something nicer...",
+  disabled = false
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
@@ -28,13 +30,14 @@ export const ChatInput = ({
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className="relative flex items-center gap-2 px-4 py-3 bg-background border-2 border-primary/20 rounded-3xl shadow-soft hover:border-primary/40 transition-all duration-300 focus-within:border-primary focus-within:shadow-glow">
+      <div className={`relative flex items-center gap-2 px-4 py-3 bg-background border-2 border-primary/20 rounded-3xl shadow-soft hover:border-primary/40 transition-all duration-300 focus-within:border-primary focus-within:shadow-glow ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
         <Button
           type="button"
           variant="ghost"
           size="icon"
           onClick={onMediaUpload}
-          className="shrink-0 h-10 w-10 rounded-full hover:bg-primary/10 text-primary"
+          disabled={disabled}
+          className="shrink-0 h-10 w-10 rounded-full hover:bg-primary/10 text-primary disabled:opacity-50"
         >
           <Plus className="h-5 w-5" />
         </Button>
@@ -43,7 +46,8 @@ export const ChatInput = ({
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           placeholder={placeholder}
-          className="flex-1 min-h-[40px] max-h-[120px] border-0 bg-transparent resize-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 text-base"
+          disabled={disabled}
+          className="flex-1 min-h-[40px] max-h-[120px] border-0 bg-transparent resize-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60 text-base disabled:cursor-not-allowed"
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey) {
               e.preventDefault();
@@ -57,7 +61,8 @@ export const ChatInput = ({
           variant="ghost"
           size="icon"
           onClick={onVoiceInput}
-          className="shrink-0 h-12 w-12 rounded-full bg-primary/10 hover:bg-primary/20 text-primary"
+          disabled={disabled}
+          className="shrink-0 h-12 w-12 rounded-full bg-primary/10 hover:bg-primary/20 text-primary disabled:opacity-50"
         >
           <Mic className="h-5 w-5" />
         </Button>

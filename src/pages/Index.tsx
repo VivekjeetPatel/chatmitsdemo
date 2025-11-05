@@ -1,18 +1,29 @@
 import { useState } from "react";
-import { Menu, MoreVertical, X } from "lucide-react";
+import { Menu, MoreVertical, X, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/ChatInput";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { FeedbackModal } from "@/components/FeedbackModal";
+import { InterestFilterModal, UserFilters } from "@/components/InterestFilterModal";
+import { TimeWindowControl } from "@/components/TimeWindowControl";
 import { toast } from "sonner";
 
 const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isTimeWindowActive, setIsTimeWindowActive] = useState(false);
   const [settings, setSettings] = useState({
     aiMode: false,
     voiceCall: false,
     videoCall: false,
+  });
+  const [filters, setFilters] = useState<UserFilters>({
+    gender: [],
+    topics: [],
+    hobbies: [],
+    interests: [],
+    profession: []
   });
 
   const handleSettingChange = (key: string, value: boolean) => {
@@ -41,6 +52,12 @@ const Index = () => {
   const handleClearCache = () => {
     toast.success("Cache cleared!");
     setIsSettingsOpen(false);
+  };
+
+  const handleApplyFilters = (newFilters: UserFilters) => {
+    setFilters(newFilters);
+    const totalSelected = Object.values(newFilters).flat().length;
+    toast.success(`${totalSelected} filter${totalSelected !== 1 ? 's' : ''} applied!`);
   };
 
   return (
@@ -85,8 +102,21 @@ const Index = () => {
         onClose={() => setIsFeedbackOpen(false)}
       />
 
+      {/* Interest Filter Modal */}
+      <InterestFilterModal
+        isOpen={isFilterOpen}
+        onClose={() => setIsFilterOpen(false)}
+        onApplyFilters={handleApplyFilters}
+        currentFilters={filters}
+      />
+
       {/* Main Content */}
-      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 space-y-12">
+      <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 space-y-8">
+        {/* Time Window Control */}
+        <div className="w-full animate-in fade-in slide-in-from-top-4 duration-700">
+          <TimeWindowControl onTimeStatusChange={setIsTimeWindowActive} />
+        </div>
+
         <div className="text-center space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
           <h2 className="text-3xl md:text-4xl font-bold text-primary leading-tight">
             Stay Anonymous. Connect Instantly.<br />Chat Freely.
@@ -96,6 +126,16 @@ const Index = () => {
             Filters connect you with the right people,<br />
             and smart tips make chats fun & safe.
           </p>
+
+          {/* Filter Button */}
+          <Button
+            onClick={() => setIsFilterOpen(true)}
+            className="gap-2"
+            disabled={!isTimeWindowActive}
+          >
+            <Filter className="h-5 w-5" />
+            Set Interest Filters
+          </Button>
         </div>
 
         {/* User Indicator */}
@@ -109,7 +149,8 @@ const Index = () => {
             onSendMessage={handleSendMessage}
             onVoiceInput={handleVoiceInput}
             onMediaUpload={handleMediaUpload}
-            placeholder="Say something nicer..."
+            placeholder={isTimeWindowActive ? "Say something nicer..." : "ChatMITS is offline"}
+            disabled={!isTimeWindowActive}
           />
         </div>
       </main>
