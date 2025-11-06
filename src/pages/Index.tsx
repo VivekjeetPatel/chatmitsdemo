@@ -7,6 +7,7 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { InterestFilterModal, UserFilters } from "@/components/InterestFilterModal";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -26,6 +27,8 @@ const Index = () => {
     interests: [],
     profession: []
   });
+
+  const { findMatch, isSearching, matchResult } = useMatchmaking();
 
   const handleSettingChange = (key: string, value: boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
@@ -55,14 +58,26 @@ const Index = () => {
     setIsSettingsOpen(false);
   };
 
-  const handleApplyFilters = (newFilters: UserFilters) => {
+  const handleApplyFilters = async (newFilters: UserFilters) => {
     setFilters(newFilters);
     const totalSelected = Object.values(newFilters).flat().length;
     toast.success(`${totalSelected} filter${totalSelected !== 1 ? 's' : ''} applied!`);
+    
+    // Start matching process
+    if (totalSelected > 0) {
+      await findMatch(newFilters);
+    }
   };
 
-  const handleNewChat = () => {
-    toast.info("Starting new chat...");
+  const handleNewChat = async () => {
+    if (Object.values(filters).flat().length === 0) {
+      toast.error("Please set your interest filters first");
+      setIsFilterOpen(true);
+      return;
+    }
+    
+    toast.info("Searching for a match...");
+    await findMatch(filters);
   };
 
   return (
@@ -137,7 +152,16 @@ const Index = () => {
             {/* User Indicator & Chat Input */}
             <div className="w-full max-w-2xl space-y-3 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
               <div className="text-left">
-                <p className="text-xl font-bold text-primary">random anonymous user</p>
+                <p className="text-xl font-bold text-primary">
+                  {isSearching ? "Searching for match..." : 
+                   matchResult?.matched ? "Matched! Start chatting..." : 
+                   "random anonymous user"}
+                </p>
+                {matchResult?.queuePosition && (
+                  <p className="text-sm text-muted-foreground">
+                    Queue position: {matchResult.queuePosition}
+                  </p>
+                )}
               </div>
               
               {/* Chat Input */}
