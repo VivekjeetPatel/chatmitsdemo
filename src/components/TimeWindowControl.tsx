@@ -8,7 +8,7 @@ interface TimeWindowControlProps {
 }
 
 const IST_TIMEZONE = "Asia/Kolkata";
-const START_HOUR = 21; // 9 PM
+const START_HOUR = 22; // 10 PM
 const END_HOUR = 24; // 12 AM (midnight)
 
 export const TimeWindowControl = ({ onTimeStatusChange }: TimeWindowControlProps) => {
@@ -99,7 +99,7 @@ export const TimeWindowControl = ({ onTimeStatusChange }: TimeWindowControlProps
       {!isActive && (
         <div className="mt-4 p-4 bg-background rounded-xl border border-border">
           <p className="text-sm text-center text-muted-foreground">
-            ChatMITS is available from <span className="font-bold text-primary">9:00 PM</span> to{" "}
+            ChatMITS is available from <span className="font-bold text-primary">10:00 PM</span> to{" "}
             <span className="font-bold text-primary">12:00 AM</span> IST daily
           </p>
         </div>

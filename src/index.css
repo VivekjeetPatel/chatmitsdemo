@@ -54,21 +54,21 @@ All colors MUST be HSL.
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    --sidebar-background: 0 0% 98%;
+    --sidebar-background: 18 100% 97%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-foreground: 18 80% 25%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary: 18 100% 50%;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-primary-foreground: 0 0% 100%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent: 18 100% 95%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-accent-foreground: 18 100% 40%;
 
-    --sidebar-border: 220 13% 91%;
+    --sidebar-border: 18 100% 92%;
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 18 100% 50%;
   }
 
   .dark {

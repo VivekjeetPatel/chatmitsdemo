@@ -107,6 +107,8 @@ const Index = () => {
           onNewChat={handleNewChat}
           onOpenFilters={() => setIsFilterOpen(true)}
           isTimeWindowActive={isTimeWindowActive}
+          filters={filters}
+          onFiltersChange={setFilters}
         />
         
         <div className="flex-1 flex flex-col">
