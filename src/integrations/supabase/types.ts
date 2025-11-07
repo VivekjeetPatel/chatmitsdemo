@@ -14,7 +14,195 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      anonymous_users: {
+        Row: {
+          created_at: string | null
+          filters: Json | null
+          id: string
+          is_online: boolean | null
+          last_seen: string | null
+          session_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          session_id: string
+        }
+        Update: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          is_online?: boolean | null
+          last_seen?: string | null
+          session_id?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          media_url: string | null
+          message: string | null
+          message_type: string | null
+          sender_id: string | null
+          session_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          media_url?: string | null
+          message?: string | null
+          message_type?: string | null
+          sender_id?: string | null
+          session_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          media_url?: string | null
+          message?: string | null
+          message_type?: string | null
+          sender_id?: string | null
+          session_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_messages_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "chat_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chat_sessions: {
+        Row: {
+          ended_at: string | null
+          id: string
+          started_at: string | null
+          status: string | null
+          user1_id: string | null
+          user2_id: string | null
+        }
+        Insert: {
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          user1_id?: string | null
+          user2_id?: string | null
+        }
+        Update: {
+          ended_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: string | null
+          user1_id?: string | null
+          user2_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chat_sessions_user1_id_fkey"
+            columns: ["user1_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chat_sessions_user2_id_fkey"
+            columns: ["user2_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      matching_queue: {
+        Row: {
+          created_at: string | null
+          filters: Json | null
+          id: string
+          matched_with: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          matched_with?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          filters?: Json | null
+          id?: string
+          matched_with?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "matching_queue_matched_with_fkey"
+            columns: ["matched_with"]
+            isOneToOne: false
+            referencedRelation: "anonymous_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "matching_queue_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "anonymous_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webrtc_signals: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          session_id: string
+          signal_data: Json
+          signal_type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          session_id: string
+          signal_data: Json
+          signal_type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          session_id?: string
+          signal_data?: Json
+          signal_type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

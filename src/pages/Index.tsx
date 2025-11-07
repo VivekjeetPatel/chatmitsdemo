@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Menu, MoreVertical, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/ChatInput";
@@ -7,7 +7,9 @@ import { FeedbackModal } from "@/components/FeedbackModal";
 import { InterestFilterModal, UserFilters } from "@/components/InterestFilterModal";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { ChatInterface } from "@/components/ChatInterface";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Index = () => {
@@ -28,16 +30,34 @@ const Index = () => {
     profession: []
   });
 
-  const { findMatch, isSearching, matchResult } = useMatchmaking();
+  const { findMatch, isSearching, matchResult, userId, sessionId } = useMatchmaking();
+
+  const handleSendMessage = async (message: string) => {
+    if (!matchResult?.session) {
+      toast.error("No active chat session");
+      return;
+    }
+
+    try {
+      const { error } = await (supabase as any)
+        .from('chat_messages')
+        .insert({
+          session_id: matchResult.session.id,
+          sender_id: userId,
+          message: message,
+          message_type: 'text'
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error sending message:', error);
+      toast.error('Failed to send message');
+    }
+  };
 
   const handleSettingChange = (key: string, value: boolean) => {
     setSettings(prev => ({ ...prev, [key]: value }));
     toast.success(`${key} ${value ? 'enabled' : 'disabled'}`);
-  };
-
-  const handleSendMessage = (message: string) => {
-    console.log("Message:", message);
-    toast.success("Message sent!");
   };
 
   const handleVoiceInput = () => {
@@ -143,42 +163,66 @@ const Index = () => {
 
           {/* Main Content */}
           <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 space-y-8">
-            <div className="text-center space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <h2 className="text-3xl md:text-4xl font-bold text-primary leading-tight">
-                Stay Anonymous. Connect Instantly.<br />Chat Freely.
-              </h2>
-            </div>
-
-            {/* User Indicator & Chat Input */}
-            <div className="w-full max-w-2xl space-y-3 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
-              <div className="text-left">
-                <p className="text-xl font-bold text-primary">
-                  {isSearching ? "Searching for match..." : 
-                   matchResult?.matched ? "Matched! Start chatting..." : 
-                   "random anonymous user"}
-                </p>
-                {matchResult?.queuePosition && (
-                  <p className="text-sm text-muted-foreground">
-                    Queue position: {matchResult.queuePosition}
-                  </p>
-                )}
+            {matchResult?.matched && matchResult.session ? (
+              // Chat Interface when matched
+              <div className="w-full max-w-4xl h-[600px] bg-card rounded-lg shadow-medium border border-border">
+                <ChatInterface
+                  sessionId={matchResult.session.id}
+                  userId={userId}
+                  peerId={matchResult.session.user1_id === userId ? matchResult.session.user2_id : matchResult.session.user1_id}
+                  onSendMessage={handleSendMessage}
+                  onMediaUpload={handleMediaUpload}
+                />
+                <div className="p-4 border-t border-border">
+                  <ChatInput
+                    onSendMessage={handleSendMessage}
+                    onVoiceInput={handleVoiceInput}
+                    onMediaUpload={handleMediaUpload}
+                    placeholder="Say something nice..."
+                    disabled={false}
+                  />
+                </div>
               </div>
-              
-              {/* Chat Input */}
-              <ChatInput
-                onSendMessage={handleSendMessage}
-                onVoiceInput={handleVoiceInput}
-                onMediaUpload={handleMediaUpload}
-                placeholder={isTimeWindowActive ? "Say something nicer..." : "ChatMITS is offline"}
-                disabled={!isTimeWindowActive}
-              />
-              
-              {/* Moved description text */}
-              <p className="text-center text-base md:text-lg text-foreground/70 leading-relaxed pt-2">
-                Filters connect you with the right people,<br />
-                and smart tips make chats fun & safe.
-              </p>
-            </div>
+            ) : (
+              // Landing page when not matched
+              <>
+                <div className="text-center space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <h2 className="text-3xl md:text-4xl font-bold text-primary leading-tight">
+                    Stay Anonymous. Connect Instantly.<br />Chat Freely.
+                  </h2>
+                </div>
+
+                {/* User Indicator & Chat Input */}
+                <div className="w-full max-w-2xl space-y-3 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+                  <div className="text-left">
+                    <p className="text-xl font-bold text-primary">
+                      {isSearching ? "Searching for match..." : 
+                       "random anonymous user"}
+                    </p>
+                    {matchResult?.queuePosition && (
+                      <p className="text-sm text-muted-foreground">
+                        Queue position: {matchResult.queuePosition}
+                      </p>
+                    )}
+                  </div>
+                  
+                  {/* Chat Input */}
+                  <ChatInput
+                    onSendMessage={handleSendMessage}
+                    onVoiceInput={handleVoiceInput}
+                    onMediaUpload={handleMediaUpload}
+                    placeholder={isTimeWindowActive ? "Say something nicer..." : "ChatMITS is offline"}
+                    disabled={!isTimeWindowActive || !matchResult?.matched}
+                  />
+                  
+                  {/* Moved description text */}
+                  <p className="text-center text-base md:text-lg text-foreground/70 leading-relaxed pt-2">
+                    Filters connect you with the right people,<br />
+                    and smart tips make chats fun & safe.
+                  </p>
+                </div>
+              </>
+            )}
           </main>
         </div>
       </div>
