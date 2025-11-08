@@ -56,41 +56,58 @@ export const useMatchmaking = () => {
     }
   };
 
-  // Poll for matches every 5 seconds while searching
+  // Real-time subscription for match detection
   useEffect(() => {
     if (!isSearching || matchResult?.matched) return;
 
-    const interval = setInterval(async () => {
-      // Check if we got matched by someone else
-      const { data } = await (supabase as any)
-        .from('matching_queue')
-        .select('*, matched_with')
-        .eq('user_id', userId)
-        .eq('status', 'matched')
-        .maybeSingle();
+    console.log('Setting up real-time match detection for user:', userId);
 
-      if (data && data.matched_with) {
-        // Get the session
-        const { data: session } = await (supabase as any)
-          .from('chat_sessions')
-          .select('*')
-          .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
-          .eq('status', 'active')
-          .maybeSingle();
+    // Subscribe to matching_queue changes
+    const queueChannel = supabase
+      .channel(`matching-queue-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'matching_queue',
+          filter: `user_id=eq.${userId}`
+        },
+        async (payload: any) => {
+          console.log('Queue update received:', payload.new);
+          
+          if (payload.new.status === 'matched' && payload.new.matched_with) {
+            // Get the session
+            const { data: session, error } = await (supabase as any)
+              .from('chat_sessions')
+              .select('*')
+              .or(`user1_id.eq.${userId},user2_id.eq.${userId}`)
+              .eq('status', 'active')
+              .order('started_at', { ascending: false })
+              .limit(1)
+              .maybeSingle();
 
-        if (session) {
-          setMatchResult({
-            success: true,
-            matched: true,
-            session
-          });
-          toast.success('Match found!');
-          setIsSearching(false);
+            if (session && !error) {
+              console.log('Match found! Session:', session);
+              setMatchResult({
+                success: true,
+                matched: true,
+                session
+              });
+              toast.success('Match found!');
+              setIsSearching(false);
+            }
+          }
         }
-      }
-    }, 5000);
+      )
+      .subscribe((status) => {
+        console.log('Queue subscription status:', status);
+      });
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('Cleaning up match detection for user:', userId);
+      supabase.removeChannel(queueChannel);
+    };
   }, [isSearching, matchResult, userId]);
 
   return {

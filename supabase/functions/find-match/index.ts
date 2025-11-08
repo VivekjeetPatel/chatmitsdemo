@@ -74,12 +74,13 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Find potential matches
+    // Find potential matches - ONLY waiting users who aren't already in a session
     const { data: waitingUsers, error: fetchError } = await supabase
       .from('matching_queue')
       .select('*')
       .eq('status', 'waiting')
       .neq('user_id', userId)
+      .is('matched_with', null)
 
     if (fetchError) {
       console.error('Error fetching waiting users:', fetchError)
