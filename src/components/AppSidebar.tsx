@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { MessageSquarePlus, Flame } from "lucide-react";
+import { MessageSquarePlus } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -46,10 +46,20 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
     const newFilters = { ...localFilters };
     const currentValues = newFilters[category];
     
-    if (currentValues.includes(value)) {
-      newFilters[category] = currentValues.filter(v => v !== value);
+    // For gender, use single-select behavior
+    if (category === 'gender') {
+      if (currentValues.includes(value)) {
+        newFilters[category] = [];
+      } else {
+        newFilters[category] = [value];
+      }
     } else {
-      newFilters[category] = [...currentValues, value];
+      // For other categories, use multi-select
+      if (currentValues.includes(value)) {
+        newFilters[category] = currentValues.filter(v => v !== value);
+      } else {
+        newFilters[category] = [...currentValues, value];
+      }
     }
     
     setLocalFilters(newFilters);
@@ -112,14 +122,6 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
             <div className="space-y-3">
               <label className="text-sm font-bold text-primary">Age</label>
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full font-semibold">
-                    {ageRange[0]}
-                  </span>
-                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full font-semibold">
-                    {ageRange[1]}
-                  </span>
-                </div>
                 <Slider
                   value={ageRange}
                   onValueChange={setAgeRange}
@@ -128,6 +130,14 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
                   step={1}
                   className="w-full"
                 />
+                <div className="flex justify-between text-sm">
+                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full font-semibold">
+                    {ageRange[0]}
+                  </span>
+                  <span className="bg-primary text-primary-foreground px-3 py-1 rounded-full font-semibold">
+                    {ageRange[1]}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -191,7 +201,6 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
                         : "border-primary text-primary hover:bg-primary/10"
                     }`}
                   >
-                    <Flame className="h-4 w-4 mr-1" />
                     {option}
                   </Button>
                 ))}
@@ -214,7 +223,6 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
                         : "border-primary text-primary hover:bg-primary/10"
                     }`}
                   >
-                    <Flame className="h-4 w-4 mr-1" />
                     {option}
                   </Button>
                 ))}
