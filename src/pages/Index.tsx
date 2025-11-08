@@ -38,16 +38,26 @@ const Index = () => {
     }
 
     try {
-      const { error } = await (supabase as any)
+      console.log('Sending message:', {
+        session_id: matchResult.session.id,
+        sender_id: userId,
+        message: message
+      });
+
+      const { data, error } = await (supabase as any)
         .from('chat_messages')
         .insert({
           session_id: matchResult.session.id,
           sender_id: userId,
           message: message,
           message_type: 'text'
-        });
+        })
+        .select();
 
       if (error) throw error;
+      
+      console.log('Message sent successfully:', data);
+      toast.success('Message sent!');
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');

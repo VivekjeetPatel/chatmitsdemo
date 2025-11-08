@@ -77,8 +77,10 @@ export const ChatInterface = ({
 
   // Subscribe to new messages
   useEffect(() => {
+    console.log('Setting up real-time subscription for session:', sessionId);
+    
     const channel = supabase
-      .channel('chat-messages')
+      .channel(`chat-messages-${sessionId}`)
       .on(
         'postgres_changes',
         {
@@ -88,12 +90,16 @@ export const ChatInterface = ({
           filter: `session_id=eq.${sessionId}`
         },
         (payload: any) => {
+          console.log('New message received via real-time:', payload.new);
           setMessages(prev => [...prev, payload.new]);
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Subscription status:', status);
+      });
 
     return () => {
+      console.log('Cleaning up subscription for session:', sessionId);
       supabase.removeChannel(channel);
     };
   }, [sessionId]);
