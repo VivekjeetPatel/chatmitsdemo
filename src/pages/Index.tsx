@@ -16,7 +16,6 @@ const Index = () => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isTimeWindowActive] = useState(true); // Always true during development
   const [settings, setSettings] = useState({
     aiMode: false,
     voiceCall: false,
@@ -106,7 +105,7 @@ const Index = () => {
         <AppSidebar 
           onNewChat={handleNewChat}
           onOpenFilters={() => setIsFilterOpen(true)}
-          isTimeWindowActive={isTimeWindowActive}
+          isTimeWindowActive={true}
           filters={filters}
           onFiltersChange={setFilters}
         />
@@ -213,8 +212,8 @@ const Index = () => {
                     onSendMessage={handleSendMessage}
                     onVoiceInput={handleVoiceInput}
                     onMediaUpload={handleMediaUpload}
-                    placeholder={isTimeWindowActive ? "Say something nicer..." : "ChatMITS is offline"}
-                    disabled={!isTimeWindowActive || !matchResult?.matched}
+                    placeholder="Say something nicer..."
+                    disabled={!matchResult?.matched}
                   />
                   
                   {/* Moved description text */}
