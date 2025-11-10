@@ -5,14 +5,24 @@ import { ChatInput } from "@/components/ChatInput";
 import { SettingsPanel } from "@/components/SettingsPanel";
 import { FeedbackModal } from "@/components/FeedbackModal";
 import { InterestFilterModal, UserFilters } from "@/components/InterestFilterModal";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { ChatInterface } from "@/components/ChatInterface";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const Index = () => {
+interface MainContentProps {
+  filters: UserFilters;
+  setFilters: (filters: UserFilters) => void;
+  findMatch: (filters: UserFilters) => Promise<void>;
+  isSearching: boolean;
+  matchResult: any;
+  userId: string;
+}
+
+const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, userId }: MainContentProps) => {
+  const { open: sidebarOpen } = useSidebar();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -21,15 +31,6 @@ const Index = () => {
     voiceCall: false,
     videoCall: false,
   });
-  const [filters, setFilters] = useState<UserFilters>({
-    gender: [],
-    topics: [],
-    hobbies: [],
-    interests: [],
-    profession: []
-  });
-
-  const { findMatch, isSearching, matchResult, userId, sessionId } = useMatchmaking();
 
   const handleSendMessage = async (message: string) => {
     if (!matchResult?.session) {
@@ -98,48 +99,30 @@ const Index = () => {
     }
   };
 
-  const handleNewChat = async () => {
-    if (Object.values(filters).flat().length === 0) {
-      toast.error("Please set your interest filters first");
-      setIsFilterOpen(true);
-      return;
-    }
-    
-    toast.info("Searching for a match...");
-    await findMatch(filters);
-  };
-
   return (
-    <SidebarProvider>
-      <div className="h-screen w-full bg-background flex overflow-hidden">
-        <AppSidebar 
-          onNewChat={handleNewChat}
-          onOpenFilters={() => setIsFilterOpen(true)}
-          isTimeWindowActive={true}
-          filters={filters}
-          onFiltersChange={setFilters}
-        />
-        
-        <div className="flex-1 flex flex-col h-screen overflow-hidden">
-          {/* Header */}
-          <header className="sticky top-0 z-30 bg-background/98 backdrop-blur-sm border-b border-border">
-            <div className="h-16 flex items-center justify-between px-6">
-              <div className="flex items-center justify-start w-12">
+    <>
+      <div className="flex-1 flex flex-col h-screen overflow-hidden">
+        {/* Header */}
+        <header className="sticky top-0 z-30 bg-background/98 backdrop-blur-sm border-b border-border">
+          <div className="h-16 flex items-center justify-between px-6">
+            <div className="flex items-center justify-start w-12">
+              {!sidebarOpen && (
                 <SidebarTrigger className="text-foreground/70 hover:text-primary hover:bg-transparent" />
-              </div>
-              
-              <h1 className="text-xl font-semibold text-foreground absolute left-1/2 transform -translate-x-1/2">ChatMITS</h1>
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="text-foreground/70 hover:text-primary hover:bg-transparent w-12"
-                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-              >
-                {isSettingsOpen ? <X className="h-5 w-5" /> : <MoreVertical className="h-5 w-5" />}
-              </Button>
+              )}
             </div>
-          </header>
+            
+            <h1 className="text-xl font-semibold text-foreground absolute left-1/2 transform -translate-x-1/2">ChatMITS</h1>
+            
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="text-foreground/70 hover:text-primary hover:bg-transparent w-12"
+              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+            >
+              {isSettingsOpen ? <X className="h-5 w-5" /> : <MoreVertical className="h-5 w-5" />}
+            </Button>
+          </div>
+        </header>
 
           {/* Settings Panel */}
           <SettingsPanel
@@ -234,6 +217,49 @@ const Index = () => {
             )}
           </main>
         </div>
+      </>
+  );
+};
+
+const Index = () => {
+  const [filters, setFilters] = useState<UserFilters>({
+    gender: [],
+    topics: [],
+    hobbies: [],
+    interests: [],
+    profession: []
+  });
+
+  const { findMatch, isSearching, matchResult, userId } = useMatchmaking();
+
+  const handleNewChat = async () => {
+    if (Object.values(filters).flat().length === 0) {
+      toast.error("Please set your interest filters first");
+      return;
+    }
+    
+    toast.info("Searching for a match...");
+    await findMatch(filters);
+  };
+
+  return (
+    <SidebarProvider>
+      <div className="h-screen w-full bg-background flex overflow-hidden">
+        <AppSidebar 
+          onNewChat={handleNewChat}
+          onOpenFilters={() => {}}
+          isTimeWindowActive={true}
+          filters={filters}
+          onFiltersChange={setFilters}
+        />
+        <MainContent 
+          filters={filters}
+          setFilters={setFilters}
+          findMatch={findMatch}
+          isSearching={isSearching}
+          matchResult={matchResult}
+          userId={userId}
+        />
       </div>
     </SidebarProvider>
   );
