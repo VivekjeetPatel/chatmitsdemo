@@ -111,7 +111,7 @@ const Index = () => {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen w-full bg-gradient-to-b from-background to-primary-light/20 flex">
+      <div className="h-screen w-full bg-background flex overflow-hidden">
         <AppSidebar 
           onNewChat={handleNewChat}
           onOpenFilters={() => setIsFilterOpen(true)}
@@ -120,26 +120,23 @@ const Index = () => {
           onFiltersChange={setFilters}
         />
         
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col h-screen overflow-hidden">
           {/* Header */}
-          <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-sm border-b-4 border-primary shadow-soft">
-            <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger />
-                <Button variant="ghost" size="icon" className="text-primary hover:bg-primary/10 md:hidden">
-                  <Menu className="h-6 w-6" />
-                </Button>
+          <header className="sticky top-0 z-30 bg-background/98 backdrop-blur-sm border-b border-border">
+            <div className="h-16 flex items-center justify-between px-6">
+              <div className="flex items-center justify-start w-12">
+                <SidebarTrigger className="text-foreground/70 hover:text-primary hover:bg-transparent" />
               </div>
               
-              <h1 className="text-2xl font-bold text-primary">ChatMITS</h1>
+              <h1 className="text-xl font-semibold text-foreground absolute left-1/2 transform -translate-x-1/2">ChatMITS</h1>
               
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="text-primary hover:bg-primary/10"
+                className="text-foreground/70 hover:text-primary hover:bg-transparent w-12"
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
               >
-                {isSettingsOpen ? <X className="h-6 w-6" /> : <MoreVertical className="h-6 w-6" />}
+                {isSettingsOpen ? <X className="h-5 w-5" /> : <MoreVertical className="h-5 w-5" />}
               </Button>
             </div>
           </header>
@@ -173,18 +170,20 @@ const Index = () => {
           />
 
           {/* Main Content */}
-          <main className="flex-1 flex flex-col items-center justify-center px-4 py-12 space-y-8">
+          <main className="flex-1 flex flex-col items-center justify-center px-6 overflow-y-auto">
             {matchResult?.matched && matchResult.session ? (
               // Chat Interface when matched
-              <div className="w-full max-w-4xl h-[600px] bg-card rounded-lg shadow-medium border border-border">
-                <ChatInterface
-                  sessionId={matchResult.session.id}
-                  userId={userId}
-                  peerId={matchResult.session.user1_id === userId ? matchResult.session.user2_id : matchResult.session.user1_id}
-                  onSendMessage={handleSendMessage}
-                  onMediaUpload={handleMediaUpload}
-                />
-                <div className="p-4 border-t border-border">
+              <div className="w-full max-w-4xl h-full max-h-[calc(100vh-8rem)] bg-card rounded-3xl shadow-soft border border-border flex flex-col my-6">
+                <div className="flex-1 overflow-hidden">
+                  <ChatInterface
+                    sessionId={matchResult.session.id}
+                    userId={userId}
+                    peerId={matchResult.session.user1_id === userId ? matchResult.session.user2_id : matchResult.session.user1_id}
+                    onSendMessage={handleSendMessage}
+                    onMediaUpload={handleMediaUpload}
+                  />
+                </div>
+                <div className="p-6 border-t border-border">
                   <ChatInput
                     onSendMessage={handleSendMessage}
                     onVoiceInput={handleVoiceInput}
@@ -196,17 +195,17 @@ const Index = () => {
               </div>
             ) : (
               // Landing page when not matched
-              <>
-                <div className="text-center space-y-6 max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-                  <h2 className="text-3xl md:text-4xl font-bold text-primary leading-tight">
+              <div className="w-full max-w-2xl space-y-8 my-auto">
+                <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                  <h2 className="text-3xl md:text-4xl font-semibold text-foreground leading-tight">
                     Stay Anonymous. Connect Instantly.<br />Chat Freely.
                   </h2>
                 </div>
 
                 {/* User Indicator & Chat Input */}
-                <div className="w-full max-w-2xl space-y-3 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+                <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
                   <div className="text-left">
-                    <p className="text-xl font-bold text-primary">
+                    <p className="text-lg font-medium text-primary">
                       {isSearching ? "Searching for match..." : 
                        "random anonymous user"}
                     </p>
@@ -226,13 +225,12 @@ const Index = () => {
                     disabled={!matchResult?.matched}
                   />
                   
-                  {/* Moved description text */}
-                  <p className="text-center text-base md:text-lg text-foreground/70 leading-relaxed pt-2">
-                    Filters connect you with the right people,<br />
-                    and smart tips make chats fun & safe.
+                  {/* Single line description text */}
+                  <p className="text-center text-sm text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
+                    Filters connect you with the right people, and smart tips make chats fun & safe.
                   </p>
                 </div>
-              </>
+              </div>
             )}
           </main>
         </div>
