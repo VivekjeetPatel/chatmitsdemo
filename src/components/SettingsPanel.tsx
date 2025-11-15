@@ -1,7 +1,40 @@
-import { Phone, Video, Lightbulb, RotateCcw, MessageSquare } from "lucide-react";
+import { Phone, Video, Lightbulb, RotateCcw, MessageSquare, Moon, Sun } from "lucide-react";
 import { Button } from "./ui/button";
 import { Switch } from "./ui/switch";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
+
+const DarkModeToggle = () => {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <div className="space-y-2">
+      <label className="text-sm font-semibold text-primary">Theme</label>
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <Button
+            variant={theme === "light" ? "default" : "outline"}
+            size="sm"
+            className="rounded-full px-6"
+            onClick={() => setTheme("light")}
+          >
+            <Sun className="h-4 w-4 mr-2" />
+            Light
+          </Button>
+          <Button
+            variant={theme === "dark" ? "default" : "outline"}
+            size="sm"
+            className="rounded-full px-6"
+            onClick={() => setTheme("dark")}
+          >
+            <Moon className="h-4 w-4 mr-2" />
+            Dark
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 interface SettingsPanelProps {
   isOpen: boolean;
@@ -87,6 +120,8 @@ export const SettingsPanel = ({
 
           {/* Toggle Settings */}
           <div className="pt-4 space-y-4 border-t border-border">
+            <DarkModeToggle />
+
             <div className="space-y-2">
               <label className="text-sm font-semibold text-primary">AI mode</label>
               <div className="flex items-center justify-between">
