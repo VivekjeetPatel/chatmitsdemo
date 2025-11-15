@@ -11,6 +11,7 @@ import { ChatInterface } from "@/components/ChatInterface";
 import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface MainContentProps {
   filters: UserFilters;
@@ -23,6 +24,7 @@ interface MainContentProps {
 
 const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, userId }: MainContentProps) => {
   const { open: sidebarOpen } = useSidebar();
+  const isMobile = useIsMobile();
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -106,7 +108,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
         <header className="sticky top-0 z-30 bg-background/98 backdrop-blur-sm border-b border-border">
           <div className="h-16 flex items-center justify-between px-6">
             <div className="flex items-center justify-start w-12">
-              {!sidebarOpen && (
+              {(isMobile || !sidebarOpen) && (
                 <SidebarTrigger className="text-foreground/70 hover:text-primary hover:bg-transparent" />
               )}
             </div>
