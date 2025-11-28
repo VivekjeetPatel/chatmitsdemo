@@ -78,7 +78,7 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
   const gridCols = isMobile ? "grid-cols-2" : "grid-cols-3";
 
   return (
-    <Sidebar className="border-r border-sidebar-border bg-sidebar lg:w-[25vw] md:w-[50vw] w-[85vw]">
+    <Sidebar collapsible = "offcanvas" className="border-r border-sidebar-border bg-sidebar lg:w-[25vw] md:w-[50vw] w-[85vw]">
       <SidebarContent className="bg-sidebar flex flex-col h-full">
         {/* Header with Logo and Close Button */}
         <div className="h-16 px-6 flex items-center justify-between border-b border-sidebar-border">

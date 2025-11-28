@@ -30,8 +30,8 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [settings, setSettings] = useState({
     aiMode: false,
-    voiceCall: false,
-    videoCall: false,
+    voiceCall: true,
+    videoCall: true,
   });
 
   const handleSendMessage = async (message: string) => {
@@ -105,7 +105,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
     <>
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-30 bg-background/98 backdrop-blur-sm border-b border-border">
+        <header className="sticky top-0 z-9 bg-background/98 backdrop-blur-sm border-b border-border">
           <div className="h-16 flex items-center justify-between px-6">
             <div className="flex items-center justify-start w-12">
               {(isMobile || !sidebarOpen) && (
@@ -113,7 +113,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               )}
             </div>
             
-            <h1 className="text-xl font-semibold text-foreground absolute left-1/2 transform -translate-x-1/2">ChatMITS</h1>
+            <h1 className="text-xl font-semibold text-primary absolute left-1/2 transform -translate-x-1/2">ChatMITS</h1>
             
             <Button 
               variant="ghost" 
@@ -183,22 +183,22 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               <div className="w-full max-w-2xl space-y-8 my-auto">
                 <div className="text-center space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
                   <h2 className="text-3xl md:text-4xl font-semibold text-foreground leading-tight">
-                    Stay Anonymous. Connect Instantly.<br />Chat Freely.
+                    Genuine Chat Instantly.<br />
                   </h2>
                 </div>
 
                 {/* User Indicator & Chat Input */}
-                <div className="w-full space-y-4 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
+                <div className="w-full space-y-1 animate-in fade-in slide-in-from-bottom-6 duration-700 delay-200">
                   <div className="text-left">
-                    <p className="text-lg font-medium text-primary">
+                      {matchResult?.queuePosition && (
+                        <p className="text-sm text-muted-foreground">
+                          Queue position: {matchResult.queuePosition}
+                        </p>
+                      )}
+                    <p className="text-lg pl-8  font-medium text-primary">
                       {isSearching ? "Searching for match..." : 
-                       "random anonymous user"}
+                       "anonymous user"}
                     </p>
-                    {matchResult?.queuePosition && (
-                      <p className="text-sm text-muted-foreground">
-                        Queue position: {matchResult.queuePosition}
-                      </p>
-                    )}
                   </div>
                   
                   {/* Chat Input */}
@@ -212,7 +212,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                   
                   {/* Single line description text */}
                   <p className="text-center text-sm text-muted-foreground whitespace-nowrap overflow-hidden text-ellipsis">
-                    Filters connect you with the right people, and smart tips make chats fun & safe.
+                    Filters connect you with the right people.
                   </p>
                 </div>
               </div>

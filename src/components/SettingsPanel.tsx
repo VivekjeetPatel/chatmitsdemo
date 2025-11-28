@@ -78,7 +78,7 @@ export const SettingsPanel = ({
       >
         <div className="p-6 space-y-4">
           {/* Menu Items */}
-          <button
+          {/* <button
             onClick={() => {}}
             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-accent transition-colors text-left group"
           >
@@ -92,7 +92,7 @@ export const SettingsPanel = ({
           >
             <Video className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
             <span className="text-sm font-medium">Video call</span>
-          </button>
+          </button> */}
 
           <button
             onClick={onShowTips}
