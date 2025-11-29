@@ -30,7 +30,7 @@ export const ChatInput = ({
 
   return (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className={`relative flex items-center gap-3 px-5 py-3 bg-background border border-border rounded-full shadow-soft hover:border-primary/30 transition-all duration-300 focus-within:border-primary/50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+      <div className={`relative flex items-center gap-3 px-5 py-3 bg-background border border-border rounded-full shadow-[0_6px_15px_rgba(0,0,0,0.20)] hover:border-primary/30 transition-all duration-300 focus-within:border-primary/50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
         <Button
           type="button"
           variant="ghost"
