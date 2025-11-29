@@ -12,6 +12,7 @@ interface ChatInterfaceProps {
   peerId: string;
   onSendMessage: (message: string) => void;
   onMediaUpload: () => void;
+  onCallFunctionsReady?: (functions: { startVoiceCall: () => void; startVideoCall: () => void }) => void;
 }
 
 interface Message {
@@ -21,13 +22,13 @@ interface Message {
   message_type: string;
   created_at: string;
 }
-
 export const ChatInterface = ({ 
   sessionId, 
   userId, 
   peerId,
   onSendMessage,
-  onMediaUpload 
+  onMediaUpload,
+  onCallFunctionsReady
 }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -55,6 +56,16 @@ export const ChatInterface = ({
       }
     }
   });
+
+  // Expose call functions to parent component
+  useEffect(() => {
+    if (onCallFunctionsReady && startVoiceCall && startVideoCall) {
+      onCallFunctionsReady({
+        startVoiceCall,
+        startVideoCall
+      });
+    }
+  }, [onCallFunctionsReady, startVoiceCall, startVideoCall]);
 
   // Load existing messages
   useEffect(() => {
@@ -137,7 +148,7 @@ export const ChatInterface = ({
               className="gap-2"
             >
               <Phone className="h-4 w-4" />
-              Voice Call
+              {/* Voice Call */}
             </Button>
             <Button
               onClick={startVideoCall}
@@ -146,7 +157,7 @@ export const ChatInterface = ({
               className="gap-2"
             >
               <Video className="h-4 w-4" />
-              Video Call
+              {/* Video Call */}
             </Button>
           </>
         ) : (
@@ -221,9 +232,9 @@ export const ChatInterface = ({
                 }`}
               >
                 <p className="text-sm">{msg.message}</p>
-                <span className="text-xs opacity-70">
+                {/* <span className="text-xs opacity-70">
                   {new Date(msg.created_at).toLocaleTimeString()}
-                </span>
+                </span> */}
               </div>
             </div>
           ))}

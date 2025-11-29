@@ -29,16 +29,17 @@ interface AppSidebarProps {
 
 const FILTER_OPTIONS = {
   gender: ["He", "She"],
-  topics: ["Sports", "Music", "Movies", "Gaming", "Technology", "Fashion", "Food", "Travel"],
-  hobbies: ["Reading", "Writing", "Painting", "Dancing", "Cooking", "Photography", "Gardening", "Yoga"],
-  interests: ["Science", "History", "Politics", "Philosophy", "Psychology", "Art", "Literature", "Nature"],
-  profession: ["Student", "Engineer", "Doctor", "Teacher", "Designer", "Developer", "Artist", "Entrepreneur"]
+  mood: ["Happy", "Relaxed", "Energetic", "Creative", "Focused", "Adventurous", "Thoughtful", "Playful", "Calm"],
+  topics: ["Technology", "Sports", "Music", "Movies", "Books", "Travel", "Food", "Gaming", "Art"],
+  hobbies: ["Reading", "Cooking", "Photography", "Dancing", "Hiking", "Painting", "Gardening", "Yoga", "Coding"],
+  interests: ["AI/ML", "Startups", "Fitness", "Fashion", "Politics", "Environment", "History", "Philosophy", "Psychology"],
+  profession: ["Student", "Engineer", "Designer", "Doctor", "Teacher", "Artist", "Entrepreneur", "Developer", "Marketing"]
 };
 
 export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersChange }: AppSidebarProps) {
-  const isMobile = useIsMobile();
   const [localFilters, setLocalFilters] = useState<UserFilters>(filters || {
     gender: [],
+    mood: [],
     topics: [],
     hobbies: [],
     interests: [],
@@ -75,7 +76,7 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
     return localFilters[category].includes(value);
   };
 
-  const gridCols = isMobile ? "grid-cols-2" : "grid-cols-3";
+  const gridCols = useIsMobile() ? "grid-cols-2" : "grid-cols-3";
 
   return (
     <Sidebar collapsible = "offcanvas" className="border-r border-sidebar-border bg-sidebar lg:w-[25vw] md:w-[50vw] w-[85vw]">
@@ -88,43 +89,47 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
           <SidebarTrigger className="text-foreground/70 hover:text-primary hover:bg-transparent" />
         </div>
 
+
+        <ScrollArea className="flex-1">
         {/* New Chat Button */}
-        <div className="p-6 border-b border-sidebar-border">
+        <div className="p-6 ">
           <Button 
             onClick={onNewChat} 
             disabled={!isTimeWindowActive}
             className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-full shadow-soft"
-          >
+            >
             <MessageSquarePlus className="h-5 w-5 mr-2" />
             New Chat
           </Button>
         </div>
-
-        {/* Filters */}
-        <ScrollArea className="flex-1">
+            {/* Filters */}
           <div className="px-6 pb-6 space-y-8">
             <h2 className="text-lg font-semibold text-foreground">Filters</h2>
 
             {/* Gender Toggle */}
             <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Gender</label>
-              <div className="flex items-center justify-between bg-muted rounded-full p-1">
+              <div className="relative flex items-center bg-muted rounded-full p-1">
+                {/* Sliding indicator */}
+                <span
+                  className={`absolute inset-y-1 w-1/2 rounded-full bg-primary transition-transform duration-300 ease-in-out ${
+                    isSelected("gender", "She") ? "translate-x-full" : "translate-x-0"
+                  }`}
+                />
+
                 <button
                   onClick={() => handleToggle("gender", "He")}
-                  className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    isSelected("gender", "He")
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground"
+                  className={`relative z-10 flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    isSelected("gender", "He") ? "text-primary-foreground" : "text-muted-foreground"
                   }`}
                 >
                   He
                 </button>
+
                 <button
                   onClick={() => handleToggle("gender", "She")}
-                  className={`flex-1 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                    isSelected("gender", "She")
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "text-muted-foreground"
+                  className={`relative z-10 flex-1 px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    isSelected("gender", "She") ? "text-primary-foreground" : "text-muted-foreground"
                   }`}
                 >
                   She
@@ -155,9 +160,31 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
               </div>
             </div>
 
-            {/* Mood (Topics) */}
-            <div className="space-y-3">
+                        {/* Mood */}
+                        <div className="space-y-3">
               <label className="text-sm font-medium text-foreground">Mood</label>
+              <div className={`grid ${gridCols} gap-2`}>
+                {FILTER_OPTIONS.mood.map((option) => (
+                  <Button
+                    key={option}
+                    onClick={() => handleToggle("mood", option)}
+                    variant="outline"
+                    size="sm"
+                    className={`rounded-full border transition-all ${
+                      isSelected("mood", option) 
+                        ? "bg-primary/10 border-primary text-primary font-medium" 
+                        : "border-border text-foreground/70 hover:border-primary/50 hover:text-primary hover:bg-transparent"
+                    }`}
+                  >
+                    {option}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Topics */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-foreground">Topics</label>
               <div className={`grid ${gridCols} gap-2`}>
                 {FILTER_OPTIONS.topics.map((option) => (
                   <Button
@@ -242,10 +269,18 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
                 ))}
               </div>
             </div>
-          </div>
+            </div>
+        {/* Footer */}
+        <div className="border-t border-sidebar-border px-6 py-4 shrink-0">
+          <p className="text-xs text-muted-foreground text-center text-primary">
+            <a href="https://v-labs.in" target="_blank" rel="noopener noreferrer">v-labs.in</a>
+          </p>
+        </div>
         </ScrollArea>
+
 
       </SidebarContent>
     </Sidebar>
   );
 }
+      

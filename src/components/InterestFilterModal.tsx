@@ -14,6 +14,7 @@ interface InterestFilterModalProps {
 
 export interface UserFilters {
   gender: string[];
+  mood: string[];
   topics: string[];
   hobbies: string[];
   interests: string[];
@@ -22,10 +23,11 @@ export interface UserFilters {
 
 const FILTER_OPTIONS = {
   gender: ["Male", "Female", "Non-binary", "Prefer not to say"],
-  topics: ["Technology", "Sports", "Music", "Movies", "Books", "Travel", "Food", "Gaming", "Art", "Science"],
-  hobbies: ["Reading", "Cooking", "Photography", "Dancing", "Hiking", "Painting", "Gardening", "Yoga", "Coding", "Writing"],
-  interests: ["AI/ML", "Startups", "Fitness", "Fashion", "Politics", "Environment", "History", "Philosophy", "Psychology", "Finance"],
-  profession: ["Student", "Engineer", "Designer", "Doctor", "Teacher", "Artist", "Entrepreneur", "Developer", "Marketing", "Other"]
+  mood: ["Happy", "Relaxed", "Energetic", "Creative", "Focused", "Adventurous", "Thoughtful", "Playful", "Calm"],
+  topics: ["Technology", "Sports", "Music", "Movies", "Books", "Travel", "Food", "Gaming", "Art"],
+  hobbies: ["Reading", "Cooking", "Photography", "Dancing", "Hiking", "Painting", "Gardening", "Yoga", "Coding"],
+  interests: ["AI/ML", "Startups", "Fitness", "Fashion", "Politics", "Environment", "History", "Philosophy", "Psychology"],
+  profession: ["Student", "Engineer", "Designer", "Doctor", "Teacher", "Artist", "Entrepreneur", "Developer", "Marketing"]
 };
 
 export const InterestFilterModal = ({
@@ -53,6 +55,7 @@ export const InterestFilterModal = ({
   const handleClear = () => {
     setFilters({
       gender: [],
+      mood: [],
       topics: [],
       hobbies: [],
       interests: [],

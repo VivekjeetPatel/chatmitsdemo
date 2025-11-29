@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Menu, MoreVertical, X } from "lucide-react";
+import { Menu, MoreVertical, Phone, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/ChatInput";
 import { SettingsPanel } from "@/components/SettingsPanel";
@@ -28,12 +28,12 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [callFunctions, setCallFunctions] = useState<{ startVoiceCall: () => void; startVideoCall: () => void } | null>(null);
   const [settings, setSettings] = useState({
     aiMode: false,
     voiceCall: true,
     videoCall: true,
   });
-
   const handleSendMessage = async (message: string) => {
     if (!matchResult?.session) {
       toast.error("No active chat session");
@@ -100,7 +100,11 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
       await findMatch(newFilters);
     }
   };
+  const handleCallFunctionsReady = (functions: { startVoiceCall: () => void; startVideoCall: () => void }) => {
+    setCallFunctions(functions);
+  };
 
+  
   return (
     <>
       <div className="flex-1 flex flex-col h-screen overflow-hidden">
@@ -115,14 +119,42 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
             
             <h1 className="text-xl font-semibold text-primary absolute left-1/2 transform -translate-x-1/2">ChatMITS</h1>
             
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="text-foreground/70 hover:text-primary hover:bg-transparent w-12"
-              onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-            >
-              {isSettingsOpen ? <X className="h-5 w-5" /> : <MoreVertical className="h-5 w-5" />}
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Voice and Video Call Buttons - only show when there's an active session and call functions are ready */}
+              {matchResult?.matched && matchResult.session && callFunctions && (
+                <>
+                  <Button
+                    onClick={callFunctions.startVoiceCall}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    disabled={!settings.voiceCall}
+                  >
+                    <Phone className="h-4 w-4" />
+                    Voice Call
+                  </Button>
+                  <Button
+                    onClick={callFunctions.startVideoCall}
+                    variant="outline"
+                    size="sm"
+                    className="gap-2"
+                    disabled={!settings.videoCall}
+                  >
+                    <Video className="h-4 w-4" />
+                    Video Call
+                  </Button>
+                </>
+              )}
+              
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="text-foreground/70 hover:text-primary hover:bg-transparent w-12"
+                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
+              >
+                {isSettingsOpen ? <X className="h-5 w-5" /> : <MoreVertical className="h-5 w-5" />}
+              </Button>
+            </div>
           </div>
         </header>
 
@@ -160,13 +192,15 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               // Chat Interface when matched
               <div className="w-full max-w-4xl h-full max-h-[calc(100vh-8rem)] bg-card rounded-3xl shadow-soft border border-border flex flex-col my-6">
                 <div className="flex-1 overflow-hidden">
-                  <ChatInterface
+                <ChatInterface
                     sessionId={matchResult.session.id}
                     userId={userId}
                     peerId={matchResult.session.user1_id === userId ? matchResult.session.user2_id : matchResult.session.user1_id}
                     onSendMessage={handleSendMessage}
                     onMediaUpload={handleMediaUpload}
+                    onCallFunctionsReady={handleCallFunctionsReady}
                   />
+                  
                 </div>
                 <div className="p-6 border-t border-border">
                   <ChatInput
@@ -226,6 +260,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 const Index = () => {
   const [filters, setFilters] = useState<UserFilters>({
     gender: [],
+    mood: [],
     topics: [],
     hobbies: [],
     interests: [],
