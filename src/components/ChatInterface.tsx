@@ -12,7 +12,7 @@ interface ChatInterfaceProps {
   peerId: string;
   onSendMessage: (message: string) => void;
   onMediaUpload: () => void;
-  onCallFunctionsReady?: (functions: { startVoiceCall: () => void; startVideoCall: () => void }) => void;
+  onCallFunctionsReady?: (functions: { startVoiceCall: () => void; startVideoCall: () => void; endCall: () => void; localStream: MediaStream | null; remoteStream: MediaStream | null }) => void;
 }
 
 interface Message {
@@ -59,13 +59,16 @@ export const ChatInterface = ({
 
   // Expose call functions to parent component
   useEffect(() => {
-    if (onCallFunctionsReady && startVoiceCall && startVideoCall) {
+    if (onCallFunctionsReady && startVoiceCall && startVideoCall && endCall !== undefined) {
       onCallFunctionsReady({
         startVoiceCall,
-        startVideoCall
+        startVideoCall,
+        endCall,
+        localStream,
+        remoteStream,
       });
     }
-  }, [onCallFunctionsReady, startVoiceCall, startVideoCall]);
+  }, [onCallFunctionsReady, startVoiceCall, startVideoCall, endCall, localStream, remoteStream]);
 
   // Load existing messages
   useEffect(() => {
@@ -137,84 +140,7 @@ export const ChatInterface = ({
 
   return (
     <div className="flex flex-col h-full">
-      {/* Call Controls */}
-      <div className="flex gap-2 p-4 bg-background/95 border-b border-border">
-        {!isCallActive ? (
-          <>
-            <Button
-              onClick={startVoiceCall}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Phone className="h-4 w-4" />
-              {/* Voice Call */}
-            </Button>
-            <Button
-              onClick={startVideoCall}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <Video className="h-4 w-4" />
-              {/* Video Call */}
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button
-              onClick={toggleAudio}
-              variant={isAudioEnabled ? "outline" : "destructive"}
-              size="sm"
-              className="gap-2"
-            >
-              {isAudioEnabled ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-            </Button>
-            {isVideoEnabled && (
-              <Button
-                onClick={toggleVideo}
-                variant="outline"
-                size="sm"
-                className="gap-2"
-              >
-                {isVideoEnabled ? <VideoIcon className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
-              </Button>
-            )}
-            <Button
-              onClick={endCall}
-              variant="destructive"
-              size="sm"
-              className="gap-2"
-            >
-              <PhoneOff className="h-4 w-4" />
-              End Call
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Video Display */}
-      {isCallActive && (
-        <div className="relative bg-black">
-          {remoteStream && (
-            <video
-              ref={remoteVideoRef}
-              autoPlay
-              playsInline
-              className="w-full h-64 object-cover"
-            />
-          )}
-          {localStream && (
-            <video
-              ref={localVideoRef}
-              autoPlay
-              playsInline
-              muted
-              className="absolute bottom-4 right-4 w-32 h-24 object-cover rounded-lg border-2 border-primary"
-            />
-          )}
-        </div>
-      )}
+      
 
       {/* Messages */}
       <ScrollArea className="flex-1 p-4" ref={scrollRef}>

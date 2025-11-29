@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Menu, MoreVertical, Phone, Video, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ChatInput } from "@/components/ChatInput";
@@ -12,6 +12,7 @@ import { useMatchmaking } from "@/hooks/useMatchmaking";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { VoiceVisualizer } from "@/components/VoiceVisualizer";
 
 interface MainContentProps {
   filters: UserFilters;
@@ -25,6 +26,18 @@ interface MainContentProps {
 const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, userId }: MainContentProps) => {
   const { open: sidebarOpen } = useSidebar();
   const isMobile = useIsMobile();
+  const [callWindow, setCallWindow] = useState<{ type: "voice" | "video"; active: boolean } | null>(null);
+  const [callWindowPos, setCallWindowPos] = useState({ x: 60, y: 130 });
+  const [isDraggingCallWin, setIsDraggingCallWin] = useState(false);
+  const dragOffsetRef = useRef<{x:number, y:number}>({x:0,y:0});
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [callControls, setCallControls] = useState<{
+    startVoiceCall: () => void;
+    startVideoCall: () => void;
+    endCall: () => void;
+    localStream: MediaStream | null;
+    remoteStream: MediaStream | null;
+  } | null>(null);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
@@ -34,6 +47,121 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
     voiceCall: true,
     videoCall: true,
   });
+  const [callWindowSize, setCallWindowSize] = useState({ width: 288, height: 245 });
+  const [isResizingCallWin, setIsResizingCallWin] = useState(false);
+  const resizeOffsetRef = useRef<{x:number,y:number,w:number,h:number}>({x:0, y:0, w:288, h:245});
+  const ringtoneRef = useRef<HTMLAudioElement|null>(null);
+
+  // Drag logic for call window
+  const startDragCallWin = (e: React.MouseEvent<HTMLDivElement>) => {
+    setIsDraggingCallWin(true);
+    dragOffsetRef.current = {
+      x: e.clientX - callWindowPos.x,
+      y: e.clientY - callWindowPos.y,
+    };
+  };
+  useEffect(() => {
+    if (!isDraggingCallWin) return;
+    function onMove(e: MouseEvent) {
+      setCallWindowPos(pos => ({
+        x: Math.max(0, e.clientX - dragOffsetRef.current.x),
+        y: Math.max(0, e.clientY - dragOffsetRef.current.y),
+      }));
+    }
+    function onUp() { setIsDraggingCallWin(false); }
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [isDraggingCallWin]);
+
+  // Resize logic
+  const startResizeCallWin = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+    setIsResizingCallWin(true);
+    resizeOffsetRef.current = {
+      x: e.clientX,
+      y: e.clientY,
+      w: callWindowSize.width,
+      h: callWindowSize.height
+    };
+  };
+  useEffect(() => {
+    if (!isResizingCallWin) return;
+    function onMove(e: MouseEvent) {
+      setCallWindowSize(s => ({
+        width: Math.max(260, Math.min(480, resizeOffsetRef.current.w + (e.clientX - resizeOffsetRef.current.x))),
+        height: Math.max(200, Math.min(420, resizeOffsetRef.current.h + (e.clientY - resizeOffsetRef.current.y))),
+      }));
+    }
+    function onUp() { setIsResizingCallWin(false); }
+    window.addEventListener("mousemove", onMove);
+    window.addEventListener("mouseup", onUp);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseup", onUp);
+    };
+  }, [isResizingCallWin]);
+
+  // Ringtone: play when starting call, stop on end
+  useEffect(() => {
+    if (!callWindow || !ringtoneRef.current) return;
+    if (callWindow.active) {
+      ringtoneRef.current.currentTime = 0;
+      ringtoneRef.current.loop = true;
+      ringtoneRef.current.play().catch(()=>{});
+    } else {
+      ringtoneRef.current.pause();
+      ringtoneRef.current.currentTime = 0;
+    }
+    return () => {
+      if(ringtoneRef.current) {ringtoneRef.current.pause(); ringtoneRef.current.currentTime = 0;}
+    };
+  }, [callWindow?.type, callWindow?.active]);
+
+  // Handle call end
+  const onEndCall = () => {
+    callControls?.endCall && callControls.endCall();
+    setCallWindow(null);
+  };
+
+  // Header button click handlers
+  const handleVoiceCallClick = () => {
+    if (callWindow?.type === "voice" && callWindow.active) {
+      onEndCall();
+      return;
+    }
+    callControls?.startVoiceCall && callControls.startVoiceCall();
+    setCallWindow({ type: "voice", active: true });
+  };
+  const handleVideoCallClick = () => {
+    if (callWindow?.type === "video" && callWindow.active) {
+      onEndCall();
+      return;
+    }
+    callControls?.startVideoCall && callControls.startVideoCall();
+    setCallWindow({ type: "video", active: true });
+  };
+
+  // Auto-close call window when call ends (TODO: tie to call active/stream state)
+  useEffect(() => {
+    if (callWindow?.active && callControls?.localStream) {
+      const cleanup = () => {
+        setCallWindow(null);
+        setCallControls(null);
+      };
+      const stream = callControls.localStream;
+      stream.getTracks().forEach(track => track.stop());
+      window.removeEventListener("beforeunload", cleanup);
+      window.addEventListener("beforeunload", cleanup);
+      return () => {
+        window.removeEventListener("beforeunload", cleanup);
+      };
+    }
+  }, [callWindow?.active, callControls?.localStream]);
+
   const handleSendMessage = async (message: string) => {
     if (!matchResult?.session) {
       toast.error("No active chat session");
@@ -60,7 +188,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
       if (error) throw error;
       
       console.log('Message sent successfully:', data);
-      toast.success('Message sent!');
+      // toast.success('Message sent!');
     } catch (error) {
       console.error('Error sending message:', error);
       toast.error('Failed to send message');
@@ -100,8 +228,9 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
       await findMatch(newFilters);
     }
   };
-  const handleCallFunctionsReady = (functions: { startVoiceCall: () => void; startVideoCall: () => void }) => {
-    setCallFunctions(functions);
+  const handleCallFunctionsReady = (fns: any) => {
+    setCallFunctions(fns); // still needed for original buttons
+    setCallControls(fns);
   };
 
   
@@ -120,40 +249,36 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
             <h1 className="text-xl font-semibold text-primary absolute left-1/2 transform -translate-x-1/2">ChatMITS</h1>
             
             <div className="flex items-center gap-2">
-              {/* Voice and Video Call Buttons - only show when there's an active session and call functions are ready */}
-              {matchResult?.matched && matchResult.session && callFunctions && (
-                <>
-                  <Button
-                    onClick={callFunctions.startVoiceCall}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    disabled={!settings.voiceCall}
-                  >
-                    <Phone className="h-4 w-4" />
-                    Voice Call
-                  </Button>
-                  <Button
-                    onClick={callFunctions.startVideoCall}
-                    variant="outline"
-                    size="sm"
-                    className="gap-2"
-                    disabled={!settings.videoCall}
-                  >
-                    <Video className="h-4 w-4" />
-                    Video Call
-                  </Button>
-                </>
-              )}
-              
-              <Button 
-                variant="ghost" 
-                size="icon" 
+              {matchResult?.matched && matchResult.session && (<> 
+              {/* Floating call buttons */}
+              <Button
+                onClick={handleVoiceCallClick}
+                variant={callWindow?.active && callWindow.type === "voice" ? "destructive" : "outline"}
+                size="sm"
+                className="gap-2"
+                disabled={!settings.voiceCall}
+              >
+                {callWindow?.active && callWindow.type === "voice" ? "End Call" : "Voice Call"}
+              </Button>
+              <Button
+                onClick={handleVideoCallClick}
+                variant={callWindow?.active && callWindow.type === "video" ? "destructive" : "outline"}
+                size="sm"
+                className="gap-2"
+                disabled={!settings.videoCall}
+              >
+                {callWindow?.active && callWindow.type === "video" ? "End Call" : "Video Call"}
+              </Button>
+              </>)}
+              <Button
+                variant="ghost"
+                size="icon"
                 className="text-foreground/70 hover:text-primary hover:bg-transparent w-12"
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
               >
                 {isSettingsOpen ? <X className="h-5 w-5" /> : <MoreVertical className="h-5 w-5" />}
               </Button>
+              
             </div>
           </div>
         </header>
@@ -187,7 +312,35 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
           />
 
           {/* Main Content */}
-          <main className="flex-1 flex flex-col items-center justify-center px-6 overflow-y-auto">
+          <main ref={chatContainerRef} className="flex-1 flex flex-col items-center justify-center px-6 overflow-y-auto relative">
+            {/* Floating Call Window */}
+            {callWindow && (
+              <div
+                className="absolute z-50 rounded-2xl bg-background border border-primary/30 shadow-2xl cursor-move select-none"
+                style={{ top: callWindowPos.y, left: callWindowPos.x, width: callWindowSize.width, height: callWindowSize.height }}
+                onMouseDown={startDragCallWin}
+              >
+                <div className="p-4 h-full">
+                  {callWindow.type === "video" ? (
+                    <video autoPlay playsInline className="w-full h-40 rounded-xl bg-black" style={{height: callWindowSize.height-86}} ref={el => { if (el && callControls?.remoteStream) el.srcObject = callControls.remoteStream; }} />
+                  ) : (
+                    <VoiceVisualizer stream={callControls?.localStream ?? null} />
+                  )}
+                {/* <div className="flex items-center justify-between px-4 py-2  border-border">
+                  <span className="text-sm font-semibold capitalize">{callWindow.type} call</span>
+                  <Button size="sm" variant="destructive" onClick={onEndCall}>End Call</Button>
+                </div> */}
+                </div>
+
+                {/* Resize handle */}
+                <div
+                  className="absolute bottom-0 right-0 w-6 h-6 cursor-nwse-resize select-none z-10"
+                  onMouseDown={startResizeCallWin}
+                  style={{borderBottom: '2px solid #ff6200', borderRight: '2px solid #ff6200', borderBottomRightRadius: 8}}
+                />
+              </div>
+            )}
+            <audio ref={ringtoneRef} src="/ringtone.mp3" preload="auto" style={{display:'none'}} />
             {matchResult?.matched && matchResult.session ? (
               // Chat Interface when matched
               <div className="w-full max-w-4xl h-full max-h-[calc(100vh-8rem)] bg-card rounded-3xl shadow-soft border border-border flex flex-col my-6">
