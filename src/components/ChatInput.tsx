@@ -2,6 +2,7 @@ import { Plus, Mic } from "lucide-react";
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { Textarea } from "./ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -9,6 +10,7 @@ interface ChatInputProps {
   onMediaUpload: () => void;
   placeholder?: string;
   disabled?: boolean;
+  disabledMessage?: string;
 }
 
 export const ChatInput = ({ 
@@ -16,21 +18,32 @@ export const ChatInput = ({
   onVoiceInput, 
   onMediaUpload,
   placeholder = "Say something nicer...",
-  disabled = false
+  disabled = false,
+  disabledMessage = "Please select filters first, then click New chat to start typing messages."
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (message.trim()) {
+    if (message.trim() && !disabled) {
       onSendMessage(message);
       setMessage("");
     }
   };
 
-  return (
+  const handleClick = () => {
+    if (disabled) {
+      // Optionally show toast here if you want
+      return;
+    }
+  };
+
+  const inputContent = (
     <form onSubmit={handleSubmit} className="w-full">
-      <div className={`relative flex items-center gap-3 px-5 py-3 bg-background border border-border rounded-full shadow-[0_6px_15px_rgba(0,0,0,0.20)] hover:border-primary/30 transition-all duration-300 focus-within:border-primary/50 ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}>
+      <div 
+        className={`relative flex items-center gap-3 px-5 py-3 bg-background border border-border rounded-full shadow-[0_6px_15px_rgba(0,0,0,0.20)] hover:border-primary/30 transition-all duration-300 focus-within:border-primary/50 ${disabled ? 'opacity-70 cursor-not-allowed' : ''}`}
+        onClick={handleClick}
+      >
         <Button
           type="button"
           variant="ghost"
@@ -44,12 +57,12 @@ export const ChatInput = ({
         
         <Textarea
           value={message}
-          onChange={(e) => setMessage(e.target.value)}
-          placeholder={placeholder}
+          onChange={(e) => !disabled && setMessage(e.target.value)}
+          placeholder={disabled ? disabledMessage : placeholder}
           disabled={disabled}
           className="flex-1 min-h-[36px] max-h-[120px] border-0 bg-transparent resize-none focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground text-sm disabled:cursor-not-allowed"
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.key === 'Enter' && !e.shiftKey && !disabled) {
               e.preventDefault();
               handleSubmit(e);
             }
@@ -69,4 +82,21 @@ export const ChatInput = ({
       </div>
     </form>
   );
+
+  if (disabled) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {inputContent}
+          </TooltipTrigger>
+          <TooltipContent side="top" className="max-w-xs">
+            <p>{disabledMessage}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+
+  return inputContent;
 };

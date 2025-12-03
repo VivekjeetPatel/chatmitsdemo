@@ -357,11 +357,12 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                 </div>
                 <div className="p-6 border-t border-border">
                   <ChatInput
-                    onSendMessage={handleSendMessage}
-                    onVoiceInput={handleVoiceInput}
-                    onMediaUpload={handleMediaUpload}
-                    placeholder="Say something nice..."
-                    disabled={false}
+                     onSendMessage={handleSendMessage}
+                     onVoiceInput={handleVoiceInput}
+                     onMediaUpload={handleMediaUpload}
+                     placeholder="Say something nicer..."
+                     disabled={!matchResult?.matched}
+                     disabledMessage="Please select filters first, then select New Chat to start typing messages."
                   />
                 </div>
               </div>
