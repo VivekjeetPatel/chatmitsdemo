@@ -19,7 +19,7 @@ export const ChatInput = ({
   onMediaUpload,
   placeholder = "Say something nicer...",
   disabled = false,
-  disabledMessage = "Please select filters first, then click New chat to start typing messages."
+  disabledMessage = "Select filters first, then click New chat to start chatting."
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
