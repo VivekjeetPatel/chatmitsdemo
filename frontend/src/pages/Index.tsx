@@ -163,7 +163,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
       alert("No active chat session");
       return;
     }
-    if (!stompClient.current) {
+    if (!stompClient.current || !stompClient.current.connected) {
       console.error("STOMP client not connected");
       return;
     }
@@ -196,7 +196,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   };
 
   const handleMediaUpload = (base64Media: string) => {
-    if (!matchResult?.session || !stompClient.current) return;
+    if (!matchResult?.session || !stompClient.current || !stompClient.current.connected) return;
     try {
       const chatMessage = {
         sessionId: matchResult.session.id,
