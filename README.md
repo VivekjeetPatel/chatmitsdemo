@@ -1,73 +1,68 @@
-# Welcome to your Lovable project
+# ChatMITS
 
-## Project info
+ChatMITS is a local web application for connecting users via chat and matchmaking. 
+This project has recently been migrated to a monorepo structure utilizing a **React-Bootstrap** frontend and a **Spring Boot** JSON API + WebSocket backend. 
 
-**URL**: https://lovable.dev/projects/640412ca-5a03-4677-b2cc-5a1d5af447eb
+## Project Architecture
 
-## How can I edit this code?
+The repository is structured as a monorepo containing two distinct modules:
 
-There are several ways of editing your application.
+* `frontend/`: A React Single Page Application (SPA) built with Vite and React-Bootstrap for dynamic user interfaces.
+* `backend/`: A Spring Boot 3 + Java 17 application providing REST endpoints, WebSockets for realtime chat, and MySQL Data JPA persistence.
 
-**Use Lovable**
+## Technologies Used
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/640412ca-5a03-4677-b2cc-5a1d5af447eb) and start prompting.
+* **Frontend:**
+  * React 18
+  * Vite
+  * TypeScript
+  * Bootstrap & React-Bootstrap
+  * lucide-react (Icons)
+* **Backend:**
+  * Java 17+
+  * Spring Boot 3 (Web, WebSocket)
+  * Spring Data JPA
+  * MySQL Connector
+* **Database:**
+  * MySQL (local instance)
 
-Changes made via Lovable will be committed automatically to this repo.
+---
 
-**Use your preferred IDE**
+## Local Development Setup
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### 1. Database Setup (MySQL)
+The backend requires a local MySQL instance. 
+1. Install and start your MySQL server instance.
+2. In your MySQL instance, create a new local database, for example by running: 
+   ```sql
+   CREATE DATABASE chatmitsdemo;
+   ```
+3. Update your database configuration (URL, username, and password) inside the `backend/src/main/resources/application.properties` file if your local setup differs from the default `root`/`root`.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### 2. Backend Setup
+1. Ensure Java 17+ and Maven (or the Maven Wrapper) are installed.
+2. Navigate into the backend directory:
+   ```sh
+   cd backend
+   ```
+3. Build and start the Spring Boot application:
+   ```sh
+   ./mvnw spring-boot:run
+   ```
+The backend server runs on `http://localhost:8080` by default.
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
-
-**Edit a file directly in GitHub**
-
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/640412ca-5a03-4677-b2cc-5a1d5af447eb) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### 3. Frontend Setup
+1. Ensure Node.js and npm are installed.
+2. Open a new terminal window/tab and navigate into the frontend directory:
+   ```sh
+   cd frontend
+   ```
+3. Install the dependencies:
+   ```sh
+   npm install
+   ```
+4. Start the frontend development server:
+   ```sh
+   npm run dev
+   ```
+The frontend UI will be accessible on `http://localhost:5173` (or the nearest available port allocated by Vite).
