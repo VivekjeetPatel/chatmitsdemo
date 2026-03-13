@@ -23,13 +23,14 @@ interface MainContentProps {
   stompClient: any;
 }
 
-const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, userId, sidebarOpen, setSidebarOpen, stompClient }: MainContentProps) => {
+const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, setMatchResult, userId, sidebarOpen, setSidebarOpen, stompClient }: MainContentProps & { setMatchResult: (result: any) => void }) => {
   const isMobile = useIsMobile();
   const [callWindow, setCallWindow] = useState<{ type: "voice" | "video"; active: boolean } | null>(null);
   const [callWindowPos, setCallWindowPos] = useState({ x: 60, y: 130 });
   const [isDraggingCallWin, setIsDraggingCallWin] = useState(false);
   const dragOffsetRef = useRef<{x:number, y:number}>({x:0,y:0});
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const sessionSubscriptionRef = useRef<any>(null);
   const [callControls, setCallControls] = useState<{
     startVoiceCall: () => void;
     startVideoCall: () => void;
@@ -118,6 +119,50 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
       if(ringtoneRef.current) {ringtoneRef.current.pause(); ringtoneRef.current.currentTime = 0;}
     };
   }, [callWindow?.type, callWindow?.active]);
+
+  // Effect to handle STOMP subscription for session messages
+  useEffect(() => {
+    if (matchResult?.session?.id && stompClient.current?.connected) {
+      // Unsubscribe from any previous session topic
+      if (sessionSubscriptionRef.current) {
+        sessionSubscriptionRef.current.unsubscribe();
+      }
+
+      const sessionId = matchResult.session.id;
+      sessionSubscriptionRef.current = stompClient.current.subscribe(`/topic/session/${sessionId}`, (messageObj: any) => {
+        const msg = JSON.parse(messageObj.body);
+
+        // Handle chat closure message from server
+        if (msg.messageType === "SYSTEM_END_CHAT" || msg.message_type === "SYSTEM_END_CHAT") {
+          alert("The other user has left the chat.");
+          // Clean up match state to return to queue view
+          setMatchResult(null);
+          // Unsubscribe from this session topic
+          if (sessionSubscriptionRef.current) {
+            sessionSubscriptionRef.current.unsubscribe();
+            sessionSubscriptionRef.current = null;
+          }
+          return;
+        }
+        // Other message handling would go here, e.g., updating chat messages
+      });
+    } else {
+      // If no match or client disconnected, ensure no active subscription
+      if (sessionSubscriptionRef.current) {
+        sessionSubscriptionRef.current.unsubscribe();
+        sessionSubscriptionRef.current = null;
+      }
+    }
+
+    return () => {
+      // Cleanup on component unmount or dependency change
+      if (sessionSubscriptionRef.current) {
+        sessionSubscriptionRef.current.unsubscribe();
+        sessionSubscriptionRef.current = null;
+      }
+    };
+  }, [matchResult?.session?.id, stompClient.current?.connected, setMatchResult]);
+
 
   const onEndCall = () => {
     callControls?.endCall && callControls.endCall();
@@ -352,9 +397,14 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                   userId={userId}
                   peerId={matchResult.session.user1Id === userId ? matchResult.session.user2Id : matchResult.session.user1Id}
                   onSendMessage={handleSendMessage}
-                  onMediaUpload={handleMediaUpload as unknown as () => void} // We will update ChatInterface props next
+                  onMediaUpload={handleMediaUpload as unknown as () => void}
                   onCallFunctionsReady={handleCallFunctionsReady}
                   stompClient={stompClient}
+                  onEndSessionReceived={() => {
+                     // Automatically find new match and clean up
+                     setMatchResult(null);
+                     findMatch(filters);
+                  }}
                 />
               </div>
               <div className="p-4 border-top bg-white rounded-bottom-4">
@@ -416,13 +466,30 @@ const Index = () => {
 
   const { findMatch, isSearching, matchResult, userId, stompClient } = useMatchmaking();
 
+  // Need a way to manually reset the match result locally when chat is closed
+  // Since matchResult is returned from useMatchmaking, we'll expose a setter here or just force a re-render.
+  // The setter would be ideal, but for now we'll pass setMatchResult into useMatchmaking, or we can just call findMatch immediately.
+
   const handleNewChat = async () => {
     if (Object.values(filters).flat().length === 0) {
       alert("Please set your interest filters first");
       return;
     }
     
-    // alert("Searching for a match...");
+    // If we are currently matched, properly notify the server we are closing the chat.
+    if (matchResult?.matched && matchResult.session && stompClient.current?.connected) {
+       const chatMessage = {
+          sessionId: matchResult.session.id,
+          senderId: userId,
+          message: "Ending chat...",
+          messageType: "SYSTEM_END_CHAT"
+       };
+       stompClient.current.publish({
+          destination: "/app/chat.endSession",
+          body: JSON.stringify(chatMessage)
+       });
+    }
+
     await findMatch(filters);
   };
 
@@ -451,6 +518,11 @@ const Index = () => {
         findMatch={findMatch}
         isSearching={isSearching}
         matchResult={matchResult}
+        setMatchResult={(res) => {
+           // We will create a local proxy since useMatchmaking manages this state,
+           // but technically we don't strictly *need* to clear it since `findMatch` clears it immediately.
+           // Leaving it a no-op except to satisfy the prop if findMatch takes a moment.
+        }}
         userId={userId}
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}

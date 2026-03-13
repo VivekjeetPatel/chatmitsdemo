@@ -9,6 +9,7 @@ interface ChatInterfaceProps {
   onMediaUpload: any;
   onCallFunctionsReady?: (functions: any) => void;
   stompClient?: any;
+  onEndSessionReceived?: () => void;
 }
 
 interface Message {
@@ -29,7 +30,8 @@ export const ChatInterface = ({
   onSendMessage,
   onMediaUpload,
   onCallFunctionsReady,
-  stompClient
+  stompClient,
+  onEndSessionReceived
 }: ChatInterfaceProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
