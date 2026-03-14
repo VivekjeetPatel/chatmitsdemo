@@ -2,6 +2,7 @@ package com.mits.chatmits.controller;
 
 import com.mits.chatmits.model.ChatMessage;
 import com.mits.chatmits.model.ChatSession;
+import com.mits.chatmits.model.SignalingMessage;
 import com.mits.chatmits.repository.ChatMessageRepository;
 import com.mits.chatmits.repository.ChatSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,5 +60,12 @@ public class ChatController {
         
         // Broadcast to both users
         messagingTemplate.convertAndSend("/topic/session/" + sessionId, chatMessage);
+    }
+
+    // Handle WebRTC signaling messages
+    @MessageMapping("/chat.signal")
+    public void signal(@Payload SignalingMessage signal) {
+        // Broadcast the signaling message to the specific session signal topic
+        messagingTemplate.convertAndSend("/topic/session/" + signal.getSessionId() + "/signal", signal);
     }
 }

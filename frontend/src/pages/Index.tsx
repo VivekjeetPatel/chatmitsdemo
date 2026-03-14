@@ -10,6 +10,8 @@ import { ChatInterface } from "../components/ChatInterface";
 import { useMatchmaking } from "../hooks/useMatchmaking";
 import { useIsMobile } from "../hooks/use-mobile";
 import { VoiceVisualizer } from "../components/VoiceVisualizer";
+import { useWebRTC } from "../hooks/useWebRTC";
+import { CallInterface } from "../components/CallInterface";
 
 interface MainContentProps {
   filters: UserFilters;
@@ -31,17 +33,10 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   const dragOffsetRef = useRef<{x:number, y:number}>({x:0,y:0});
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const sessionSubscriptionRef = useRef<any>(null);
-  const [callControls, setCallControls] = useState<{
-    startVoiceCall: () => void;
-    startVideoCall: () => void;
-    endCall: () => void;
-    localStream: MediaStream | null;
-    remoteStream: MediaStream | null;
-  } | null>(null);
+
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [callFunctions, setCallFunctions] = useState<{ startVoiceCall: () => void; startVideoCall: () => void } | null>(null);
   const [settings, setSettings] = useState({
     aiMode: false,
     voiceCall: true,
@@ -51,6 +46,28 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   const [isResizingCallWin, setIsResizingCallWin] = useState(false);
   const resizeOffsetRef = useRef<{x:number,y:number,w:number,h:number}>({x:0, y:0, w:288, h:245});
   const ringtoneRef = useRef<HTMLAudioElement|null>(null);
+
+  const peerId = matchResult?.session ? (matchResult.session.user1Id === userId ? matchResult.session.user2Id : matchResult.session.user1Id) : '';
+
+  const {
+    callStatus,
+    isVideoCall,
+    localStream,
+    remoteStream,
+    startCall,
+    answerCall,
+    rejectCall,
+    endCall,
+    toggleMute,
+    toggleVideo,
+    isMuted,
+    isVideoOff
+  } = useWebRTC({
+    sessionId: matchResult?.session?.id || '',
+    userId,
+    peerId,
+    stompClient
+  });
 
   const startDragCallWin = (e: React.MouseEvent<HTMLDivElement>) => {
     setIsDraggingCallWin(true);
@@ -106,8 +123,8 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   }, [isResizingCallWin]);
 
   useEffect(() => {
-    if (!callWindow || !ringtoneRef.current) return;
-    if (callWindow.active) {
+    if (!ringtoneRef.current) return;
+    if (callStatus === 'ringing') {
       ringtoneRef.current.currentTime = 0;
       ringtoneRef.current.loop = true;
       ringtoneRef.current.play().catch(()=>{});
@@ -118,7 +135,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
     return () => {
       if(ringtoneRef.current) {ringtoneRef.current.pause(); ringtoneRef.current.currentTime = 0;}
     };
-  }, [callWindow?.type, callWindow?.active]);
+  }, [callStatus]);
 
   // Effect to handle STOMP subscription for session messages
   useEffect(() => {
@@ -164,44 +181,34 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   }, [matchResult?.session?.id, stompClient.current?.connected, setMatchResult]);
 
 
-  const onEndCall = () => {
-    callControls?.endCall && callControls.endCall();
-    setCallWindow(null);
-  };
-
   const handleVoiceCallClick = () => {
-    if (callWindow?.type === "voice" && callWindow.active) {
-      onEndCall();
+    if (callStatus !== 'idle') {
+      endCall();
       return;
     }
-    callControls?.startVoiceCall && callControls.startVoiceCall();
-    setCallWindow({ type: "voice", active: true });
+    startCall(false);
   };
   
   const handleVideoCallClick = () => {
-    if (callWindow?.type === "video" && callWindow.active) {
-      onEndCall();
+    if (callStatus !== 'idle') {
+      endCall();
       return;
     }
-    callControls?.startVideoCall && callControls.startVideoCall();
-    setCallWindow({ type: "video", active: true });
+    startCall(true);
   };
 
   useEffect(() => {
-    if (callWindow?.active && callControls?.localStream) {
+    if (callStatus !== 'idle') {
       const cleanup = () => {
-        setCallWindow(null);
-        setCallControls(null);
+        endCall();
       };
-      const stream = callControls.localStream;
-      stream.getTracks().forEach(track => track.stop());
       window.removeEventListener("beforeunload", cleanup);
       window.addEventListener("beforeunload", cleanup);
       return () => {
         window.removeEventListener("beforeunload", cleanup);
       };
     }
-  }, [callWindow?.active, callControls?.localStream]);
+  }, [callStatus]);
 
   const handleSendMessage = async (message: string) => {
     if (!matchResult?.session) {
@@ -279,11 +286,6 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
     }
   };
 
-  const handleCallFunctionsReady = (fns: any) => {
-    setCallFunctions(fns);
-    setCallControls(fns);
-  };
-
   return (
     <>
       <div className="flex-grow-1 d-flex flex-column vh-100 overflow-hidden bg-white">
@@ -304,19 +306,19 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               {matchResult?.matched && matchResult.session && (<> 
                 <Button
                   onClick={handleVoiceCallClick}
-                  variant={callWindow?.active && callWindow.type === "voice" ? "danger" : "outline-secondary"}
+                  variant={callStatus !== 'idle' && !isVideoCall ? "danger" : "outline-secondary"}
                   size="sm"
-                  disabled={!settings.voiceCall}
+                  disabled={!settings.voiceCall || (callStatus !== 'idle' && isVideoCall)}
                 >
-                  {callWindow?.active && callWindow.type === "voice" ? "End Call" : "Voice Call"}
+                  {callStatus !== 'idle' && !isVideoCall ? "End Call" : "Voice Call"}
                 </Button>
                 <Button
                   onClick={handleVideoCallClick}
-                  variant={callWindow?.active && callWindow.type === "video" ? "danger" : "outline-secondary"}
+                  variant={callStatus !== 'idle' && isVideoCall ? "danger" : "outline-secondary"}
                   size="sm"
-                  disabled={!settings.videoCall}
+                  disabled={!settings.videoCall || (callStatus !== 'idle' && !isVideoCall)}
                 >
-                  {callWindow?.active && callWindow.type === "video" ? "End Call" : "Video Call"}
+                  {callStatus !== 'idle' && isVideoCall ? "End Call" : "Video Call"}
                 </Button>
               </>)}
               <Button
@@ -360,19 +362,37 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 
         {/* Main Content */}
         <main ref={chatContainerRef} className="flex-grow-1 d-flex flex-column position-relative overflow-y-auto px-4 py-3 align-items-center justify-content-center">
-          {/* Floating Call Window */}
-          {callWindow && (
+          
+          {/* Incoming Call Overlay */}
+          {callStatus === 'ringing' && !localStream && (
+             <div className="position-absolute z-3 rounded-4 bg-white border shadow-lg d-flex flex-column align-items-center justify-content-center p-4"
+                  style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 300, zIndex: 9999 }}>
+               <h4 className="mb-3">Incoming {isVideoCall ? 'Video' : 'Voice'} Call</h4>
+               <div className="d-flex gap-3">
+                 <Button variant="success" onClick={answerCall}>Accept</Button>
+                 <Button variant="danger" onClick={rejectCall}>Decline</Button>
+               </div>
+             </div>
+          )}
+
+          {/* Floating Call Window (When Connected or Calling) */}
+          {(callStatus === 'connected' || callStatus === 'calling' || (callStatus === 'ringing' && localStream)) && (
             <div
-              className="position-absolute z-3 rounded-4 bg-white border shadow-lg"
+              className="position-absolute z-3 rounded-4 bg-dark border shadow-lg overflow-hidden"
               style={{ top: callWindowPos.y, left: callWindowPos.x, width: callWindowSize.width, height: callWindowSize.height, cursor: 'move', userSelect: 'none' }}
               onMouseDown={startDragCallWin}
             >
-              <div className="p-3 h-100">
-                {callWindow.type === "video" ? (
-                  <video autoPlay playsInline className="w-100 rounded-3 bg-dark" style={{ height: callWindowSize.height - 50, objectFit: 'cover' }} ref={el => { if (el && callControls?.remoteStream) el.srcObject = callControls.remoteStream; }} />
-                ) : (
-                  <VoiceVisualizer stream={callControls?.localStream ?? null} />
-                )}
+              <div className="h-100" style={{ pointerEvents: isDraggingCallWin ? 'none' : 'auto' }}>
+                <CallInterface 
+                  localStream={localStream}
+                  remoteStream={remoteStream}
+                  isVideoCall={isVideoCall!}
+                  isMuted={isMuted}
+                  isVideoOff={isVideoOff}
+                  onEndCall={endCall}
+                  onToggleMute={toggleMute}
+                  onToggleVideo={toggleVideo}
+                />
               </div>
 
               {/* Resize handle */}
@@ -395,10 +415,9 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                 <ChatInterface
                   sessionId={matchResult.session.id}
                   userId={userId}
-                  peerId={matchResult.session.user1Id === userId ? matchResult.session.user2Id : matchResult.session.user1Id}
+                  peerId={peerId}
                   onSendMessage={handleSendMessage}
                   onMediaUpload={handleMediaUpload as unknown as () => void}
-                  onCallFunctionsReady={handleCallFunctionsReady}
                   stompClient={stompClient}
                   onEndSessionReceived={() => {
                      // Automatically find new match and clean up
