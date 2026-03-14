@@ -41,7 +41,8 @@ export const ChatInterface = ({
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch(`http://localhost:8080/api/chat/${sessionId}/messages`);
+        const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+        const response = await fetch(`${API_BASE_URL}/api/chat/${sessionId}/messages`);
         const data = await response.json();
         setMessages(data);
       } catch (err) {

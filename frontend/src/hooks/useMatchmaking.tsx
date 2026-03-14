@@ -26,7 +26,8 @@ export const useMatchmaking = () => {
 
   useEffect(() => {
     // Setup STOMP WebSocket Client
-    const socket = new SockJS('http://localhost:8080/ws');
+    const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+    const socket = new SockJS(`${API_BASE_URL}/ws`);
     const client = new Client({
       webSocketFactory: () => socket as any,
       reconnectDelay: 5000,
@@ -60,7 +61,8 @@ export const useMatchmaking = () => {
 
     try {
       // POST to Spring Boot Matchmaker
-      const response = await fetch('http://localhost:8080/api/matchmaking/find', {
+      const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const response = await fetch(`${API_BASE_URL}/api/matchmaking/find`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, filters })
@@ -91,7 +93,8 @@ export const useMatchmaking = () => {
   const cancelMatch = async () => {
     setIsSearching(false);
     try {
-      await fetch('http://localhost:8080/api/matchmaking/cancel', {
+      const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      await fetch(`${API_BASE_URL}/api/matchmaking/cancel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId })
