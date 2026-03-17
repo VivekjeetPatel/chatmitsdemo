@@ -12,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/matchmaking")
+@CrossOrigin(origins = "*")
 public class MatchmakingController {
 
     @Autowired
