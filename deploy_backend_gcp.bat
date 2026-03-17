@@ -39,7 +39,7 @@ call gcloud run deploy chatmits-backend ^
   --cpu 2 ^
   --min-instances 1 ^
   --max-instances 15 ^
-  --set-env-vars=SPRING_DATASOURCE_URL="jdbc:mysql://YOUR_DB_IP:3306/chatmits_db",SPRING_DATASOURCE_USERNAME="root",SPRING_DATASOURCE_PASSWORD="password",SPRING_PROFILES_ACTIVE="prod"
+  --set-env-vars=SPRING_DATASOURCE_URL="jdbc:mysql://34.27.216.84:3306/chatmits_db",SPRING_DATASOURCE_USERNAME="root",SPRING_DATASOURCE_PASSWORD="SuperSecretPassword123!",SPRING_PROFILES_ACTIVE="prod"
 
 :: Output the URL
 for /f "delims=" %%i in ('gcloud run services describe chatmits-backend --platform managed --region %REGION% --format="value(status.url)"') do set BACKEND_URL=%%i
