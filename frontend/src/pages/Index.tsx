@@ -440,7 +440,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
           ) : (
             <div className="w-100 max-w-2xl text-center my-auto" style={{ maxWidth: '600px' }}>
               <h2 className="display-6 fw-bold text-dark mb-5">
-                Genuine Chat Instantly.<br />
+                Future of Social Interaction.<br />
               </h2>
 
               <div className="text-start mb-3">
