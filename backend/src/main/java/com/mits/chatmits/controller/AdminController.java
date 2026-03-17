@@ -17,7 +17,6 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/admin")
-@CrossOrigin(origins = "*") // Allow frontend access
 public class AdminController {
 
     @Autowired
