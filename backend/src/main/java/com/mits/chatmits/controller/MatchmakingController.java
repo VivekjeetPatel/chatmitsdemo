@@ -3,6 +3,7 @@ package com.mits.chatmits.controller;
 import com.mits.chatmits.model.UserFilters;
 import com.mits.chatmits.model.WaitingUser;
 import com.mits.chatmits.service.MatchmakingService;
+import com.mits.chatmits.service.PlatformConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +16,9 @@ public class MatchmakingController {
 
     @Autowired
     private MatchmakingService matchmakingService;
+
+    @Autowired
+    private PlatformConfigService configService;
 
     // Inner DTO for receiving the request safely
     public static class MatchRequest {
@@ -29,6 +33,14 @@ public class MatchmakingController {
 
     @PostMapping("/find")
     public ResponseEntity<?> findMatch(@RequestBody MatchRequest request) {
+        if (!configService.isPlatformOpen()) {
+            return ResponseEntity.status(403).body(Map.of(
+                "success", false,
+                "error", "platform_closed",
+                "message", "The platform is currently closed. Please check the schedule."
+            ));
+        }
+
         String userId = request.getUserId();
         UserFilters filters = request.getFilters();
         

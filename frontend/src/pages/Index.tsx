@@ -12,6 +12,7 @@ import { useIsMobile } from "../hooks/use-mobile";
 import { VoiceVisualizer } from "../components/VoiceVisualizer";
 import { useWebRTC } from "../hooks/useWebRTC";
 import { CallInterface } from "../components/CallInterface";
+import { usePlatformStatus } from "../hooks/usePlatformStatus";
 
 interface MainContentProps {
   filters: UserFilters;
@@ -484,6 +485,9 @@ const Index = () => {
   });
 
   const { findMatch, isSearching, matchResult, userId, stompClient } = useMatchmaking();
+  const { loading: statusLoading } = usePlatformStatus();
+
+  if (statusLoading) return null;
 
   // Need a way to manually reset the match result locally when chat is closed
   // Since matchResult is returned from useMatchmaking, we'll expose a setter here or just force a re-render.

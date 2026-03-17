@@ -130,4 +130,8 @@ public class MatchmakingService {
         set1.retainAll(list2);
         return set1.size();
     }
+
+    public List<WaitingUser> getWaitingUsers() {
+        return new ArrayList<>(waitingUsers);
+    }
 }
