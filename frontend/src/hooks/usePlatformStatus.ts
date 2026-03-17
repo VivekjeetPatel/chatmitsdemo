@@ -16,7 +16,8 @@ export const usePlatformStatus = () => {
       }
 
       try {
-        const response = await fetch('/api/admin/status');
+        const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+        const response = await fetch(`${API_BASE_URL}/api/admin/status`);
         const data = await response.json();
         
         setIsOpen(data.open);

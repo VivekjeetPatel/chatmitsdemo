@@ -486,6 +486,7 @@ const Index = () => {
 
   const { findMatch, isSearching, matchResult, userId, stompClient } = useMatchmaking();
   const { loading: statusLoading } = usePlatformStatus();
+  const isMobile = useIsMobile();
 
   if (statusLoading) return null;
 
@@ -515,8 +516,6 @@ const Index = () => {
 
     await findMatch(filters);
   };
-
-  const isMobile = useIsMobile();
 
   return (
     <div className="d-flex vh-100 vw-100 overflow-hidden bg-light position-relative">

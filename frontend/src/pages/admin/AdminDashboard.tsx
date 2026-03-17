@@ -10,9 +10,10 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
         const [configRes, usersRes] = await Promise.all([
-          fetch('/api/admin/status'),
-          fetch('/api/admin/users/active')
+          fetch(`${API_BASE_URL}/api/admin/status`),
+          fetch(`${API_BASE_URL}/api/admin/users/active`)
         ]);
         const configData = await configRes.json();
         const usersData = await usersRes.json();
@@ -33,8 +34,10 @@ const AdminDashboard = () => {
 
   const handleUpdateConfig = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.preventDefault();
     try {
-      const res = await fetch('/api/admin/config', {
+      const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const res = await fetch(`${API_BASE_URL}/api/admin/config`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)

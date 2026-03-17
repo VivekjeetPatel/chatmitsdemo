@@ -15,7 +15,8 @@ const FilterManagement = () => {
 
   const fetchFilters = async () => {
     try {
-      const res = await fetch('/api/admin/filters');
+      const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const res = await fetch(`${API_BASE_URL}/api/admin/filters`);
       const data = await res.json();
       setFilters(data);
     } catch (err) {
@@ -30,7 +31,8 @@ const FilterManagement = () => {
     if (!newFilter.value) return;
 
     try {
-      const res = await fetch('/api/admin/filters', {
+      const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const res = await fetch(`${API_BASE_URL}/api/admin/filters`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newFilter)
@@ -46,7 +48,8 @@ const FilterManagement = () => {
 
   const handleDeleteFilter = async (id: number) => {
     try {
-      const res = await fetch(`/api/admin/filters/${id}`, { method: 'DELETE' });
+      const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+      const res = await fetch(`${API_BASE_URL}/api/admin/filters/${id}`, { method: 'DELETE' });
       if (res.ok) {
         setFilters(filters.filter(f => f.id !== id));
       }
