@@ -25,6 +25,7 @@ const FILTER_OPTIONS = {
 
 export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersChange, onClose }: AppSidebarProps) {
   const [localFilters, setLocalFilters] = useState<UserFilters>(filters || {
+    myGender: undefined,
     gender: [],
     mood: [],
     topics: [],
@@ -34,10 +35,29 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
   });
   
   const [ageRange, setAgeRange] = useState<number>(16);
+  const [activeUsersInfo, setActiveUsersInfo] = useState<any>(null);
+
+  // Fetch active users for He/She stats periodically
+  useEffect(() => {
+    const fetchActive = async () => {
+      try {
+        const API_BASE_URL = import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080';
+        const res = await fetch(`${API_BASE_URL}/api/admin/users/active`);
+        if (res.ok) {
+           setActiveUsersInfo(await res.json());
+        }
+      } catch (e) {
+        console.error("Failed to fetch active users count", e);
+      }
+    };
+    fetchActive();
+    const interval = setInterval(fetchActive, 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleToggle = (category: keyof UserFilters, value: string) => {
     const newFilters = { ...localFilters };
-    const currentValues = newFilters[category];
+    const currentValues = (newFilters[category] as string[]) || [];
     
     if (category === 'gender') {
       if (currentValues.includes(value)) {
@@ -58,7 +78,8 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
   };
 
   const isSelected = (category: keyof UserFilters, value: string) => {
-    return localFilters[category].includes(value);
+    const currentValues = (localFilters[category] as string[]) || [];
+    return currentValues.includes(value);
   };
 
   const isMobile = useIsMobile();
@@ -91,21 +112,36 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
 
         <h5 className="mb-3">Filters</h5>
 
-        {/* Gender */}
+        {/* Gender Preference */}
         <div className="mb-4">
-          <label className="form-label fw-bold small">Gender</label>
-          <div className="d-flex gap-2">
-            {FILTER_OPTIONS.gender.map(g => (
+          <label className="form-label fw-bold small">Looking For</label>
+          <div className="d-flex gap-2 text-center">
+            <div className="flex-fill">
               <Button 
-                key={g}
-                variant={isSelected("gender", g) ? "primary" : "outline-secondary"}
-                className="flex-fill rounded-pill"
+                variant={isSelected("gender", "He") ? "primary" : "outline-secondary"}
+                className="w-100 rounded-pill mb-1"
                 size="sm"
-                onClick={() => handleToggle("gender", g)}
+                onClick={() => handleToggle("gender", "He")}
               >
-                {g}
+                He
               </Button>
-            ))}
+              <div style={{ fontSize: '0.65rem', color: '#64748b' }}>
+                 {activeUsersInfo?.totalSheSelected || 0} users
+              </div>
+            </div>
+            <div className="flex-fill">
+              <Button 
+                variant={isSelected("gender", "She") ? "primary" : "outline-secondary"}
+                className="w-100 rounded-pill mb-1"
+                size="sm"
+                onClick={() => handleToggle("gender", "She")}
+              >
+                She
+              </Button>
+              <div style={{ fontSize: '0.65rem', color: '#64748b' }}>
+                 {activeUsersInfo?.totalHeSelected || 0} users
+              </div>
+            </div>
           </div>
         </div>
 

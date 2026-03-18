@@ -6,6 +6,8 @@ import WaitingPage from "./pages/WaitingPage";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import FilterManagement from "./pages/admin/FilterManagement";
+import AdminActiveUsers from "./pages/admin/AdminActiveUsers";
+import AdminSettings from "./pages/admin/AdminSettings";
 
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -32,8 +34,8 @@ const App = () => (
           <Route path="/admin" element={<AdminLayout />}>
             <Route index element={<AdminDashboard />} />
             <Route path="filters" element={<FilterManagement />} />
-            <Route path="users" element={<AdminDashboard />} /> {/* Reuse or create separate */}
-            <Route path="settings" element={<AdminDashboard />} />
+            <Route path="users" element={<AdminActiveUsers />} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
 
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

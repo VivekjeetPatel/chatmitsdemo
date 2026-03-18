@@ -476,6 +476,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [filters, setFilters] = useState<UserFilters>({
+    myGender: undefined,
     gender: [],
     mood: [],
     topics: [],

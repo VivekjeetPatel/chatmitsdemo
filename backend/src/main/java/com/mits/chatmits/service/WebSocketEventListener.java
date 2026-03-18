@@ -1,7 +1,6 @@
 package com.mits.chatmits.service;
 
 import com.mits.chatmits.model.ChatMessage;
-import com.mits.chatmits.model.ChatSession;
 import com.mits.chatmits.repository.ChatMessageRepository;
 import com.mits.chatmits.repository.ChatSessionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,6 +47,7 @@ public class WebSocketEventListener {
                 if (sessionId != null) {
                     System.out.println("User " + userId + " subscribed via session " + sessionId);
                     sessionToUserId.put(sessionId, userId);
+                    matchmakingService.markUserConnected(userId);
                 }
             } else if (destination.startsWith("/topic/session/")) {
                 String chatSessionId = destination.substring("/topic/session/".length());
@@ -68,8 +68,8 @@ public class WebSocketEventListener {
         if (sessionId != null) {
             String userId = sessionToUserId.remove(sessionId);
             if (userId != null) {
-                System.out.println("Session " + sessionId + " disconnected, removing user " + userId + " from matchmaking queue");
-                matchmakingService.removeUserFromQueue(userId);
+                System.out.println("Session " + sessionId + " disconnected, marking user " + userId + " as disconnected");
+                matchmakingService.markUserDisconnected(userId);
 
                 // Also check if they are in an active chat
                 String chatSessionId = userToActiveSession.remove(userId);

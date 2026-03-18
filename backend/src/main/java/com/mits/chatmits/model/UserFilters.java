@@ -3,6 +3,7 @@ package com.mits.chatmits.model;
 import java.util.List;
 
 public class UserFilters {
+    private String myGender;
     private List<String> gender;
     private List<String> mood;
     private List<String> topics;
@@ -12,6 +13,9 @@ public class UserFilters {
     private Integer minAge;
 
     // Getters and Setters
+    public String getMyGender() { return myGender; }
+    public void setMyGender(String myGender) { this.myGender = myGender; }
+
     public List<String> getGender() { return gender; }
     public void setGender(List<String> gender) { this.gender = gender; }
     

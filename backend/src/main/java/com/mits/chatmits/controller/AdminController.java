@@ -44,8 +44,60 @@ public class AdminController {
 
     @GetMapping("/users/active")
     public ResponseEntity<?> getActiveUsers() {
-        List<WaitingUser> users = matchmakingService.getWaitingUsers();
-        return ResponseEntity.ok(users);
+        com.mits.chatmits.model.ActiveUsersResponse response = new com.mits.chatmits.model.ActiveUsersResponse();
+        
+        java.util.Set<String> allUsers = matchmakingService.getConnectedUsers();
+        java.util.Map<String, com.mits.chatmits.model.UserFilters> allFilters = matchmakingService.getConnectedUserFilters();
+        List<WaitingUser> queue = matchmakingService.getWaitingUsers();
+        List<com.mits.chatmits.model.ChatSession> activeSessions = matchmakingService.getActiveSessions();
+
+        response.setTotalUsersInPlatform(allUsers.size());
+        
+        int heCount = 0;
+        int sheCount = 0;
+        for (com.mits.chatmits.model.UserFilters f : allFilters.values()) {
+            if ("He".equalsIgnoreCase(f.getMyGender())) heCount++;
+            else if ("She".equalsIgnoreCase(f.getMyGender())) sheCount++;
+        }
+        response.setTotalHeSelected(heCount);
+        response.setTotalSheSelected(sheCount);
+        
+        response.setQueueUsers(queue);
+        
+        // Chatting users mapping
+        List<Map<String, Object>> chattingList = new java.util.ArrayList<>();
+        java.util.Set<String> chattingIds = new java.util.HashSet<>();
+        
+        for (com.mits.chatmits.model.ChatSession s : activeSessions) {
+            Map<String, Object> sessionInfo = new HashMap<>();
+            sessionInfo.put("sessionId", s.getId());
+            sessionInfo.put("user1Id", s.getUser1Id());
+            sessionInfo.put("user2Id", s.getUser2Id());
+            sessionInfo.put("startedAt", s.getStartedAt());
+            sessionInfo.put("user1Filters", allFilters.get(s.getUser1Id()));
+            sessionInfo.put("user2Filters", allFilters.get(s.getUser2Id()));
+            chattingList.add(sessionInfo);
+            chattingIds.add(s.getUser1Id());
+            chattingIds.add(s.getUser2Id());
+        }
+        response.setChattingUsers(chattingList);
+        
+        // Idle users mapping
+        java.util.Set<String> queueIds = new java.util.HashSet<>();
+        for (WaitingUser w : queue) queueIds.add(w.getUserId());
+        
+        List<Map<String, Object>> idleList = new java.util.ArrayList<>();
+        for (String uid : allUsers) {
+            if (!queueIds.contains(uid) && !chattingIds.contains(uid)) {
+                Map<String, Object> idleInfo = new HashMap<>();
+                idleInfo.put("userId", uid);
+                idleInfo.put("filters", allFilters.get(uid));
+                idleList.add(idleInfo);
+            }
+        }
+        response.setIdleUsers(idleList);
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/filters")

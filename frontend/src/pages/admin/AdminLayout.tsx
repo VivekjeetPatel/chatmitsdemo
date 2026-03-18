@@ -36,9 +36,9 @@ const AdminLayout = () => {
     transition: 'all 0.3s ease',
     marginBottom: '0.5rem',
     textDecoration: 'none',
-    backgroundColor: isActive ? 'rgba(79, 70, 229, 0.1)' : 'transparent',
-    color: isActive ? '#818cf8' : '#94a3b8',
-    border: isActive ? '1px solid rgba(79, 70, 229, 0.2)' : '1px solid transparent'
+    backgroundColor: isActive ? 'rgba(255, 98, 0, 0.1)' : 'transparent',
+    color: isActive ? '#FF6200' : '#94a3b8',
+    border: isActive ? '1px solid rgba(255, 98, 0, 0.2)' : '1px solid transparent'
   });
 
   return (
@@ -50,11 +50,11 @@ const AdminLayout = () => {
             width: '40px',
             height: '40px',
             borderRadius: '12px',
-            background: 'linear-gradient(to bottom right, #6366f1, #4338ca)',
+            background: 'linear-gradient(to bottom right, #FF7B00, #E65A00)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 12px rgba(99, 102, 241, 0.2)'
+            boxShadow: '0 4px 12px rgba(255, 98, 0, 0.2)'
           }}>
             <Settings size={24} color="white" />
           </div>

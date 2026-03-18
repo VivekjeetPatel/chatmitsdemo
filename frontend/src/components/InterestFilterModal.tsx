@@ -10,6 +10,7 @@ interface InterestFilterModalProps {
 }
 
 export interface UserFilters {
+  myGender?: string;
   gender: string[];
   mood: string[];
   topics: string[];
@@ -36,12 +37,15 @@ export const InterestFilterModal = ({
   const [filters, setFilters] = useState<UserFilters>(currentFilters);
 
   const handleToggle = (category: keyof UserFilters, value: string) => {
-    setFilters(prev => ({
-      ...prev,
-      [category]: prev[category].includes(value)
-        ? prev[category].filter(item => item !== value)
-        : [...prev[category], value]
-    }));
+    setFilters(prev => {
+      const arr = (prev[category] as string[]) || [];
+      return {
+        ...prev,
+        [category]: arr.includes(value)
+          ? arr.filter(item => item !== value)
+          : [...arr, value]
+      };
+    });
   };
 
   const handleApply = () => {
@@ -51,6 +55,7 @@ export const InterestFilterModal = ({
 
   const handleClear = () => {
     setFilters({
+      myGender: undefined,
       gender: [],
       mood: [],
       topics: [],
@@ -68,12 +73,17 @@ export const InterestFilterModal = ({
       
       <Modal.Body className="pt-3">
         <div className="d-flex flex-column gap-4">
+          {/* My Gender Selection Removed */}
+
           {Object.entries(FILTER_OPTIONS).map(([category, options]) => (
             <div key={category}>
-              <h5 className="text-capitalize mb-3" style={{ color: '#FF6200' }}>{category}</h5>
+              <h5 className="text-capitalize mb-3" style={{ color: '#FF6200' }}>
+                {category === 'gender' ? 'Looking For' : category}
+              </h5>
               <div className="row g-2">
                 {options.map((option) => {
-                  const isChecked = filters[category as keyof UserFilters].includes(option);
+                  const arr = (filters[category as keyof UserFilters] as string[]) || [];
+                  const isChecked = arr.includes(option);
                   return (
                     <div className="col-sm-6 col-md-4" key={option}>
                       <div 

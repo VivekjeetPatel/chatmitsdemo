@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,10 +24,23 @@ public class MatchmakingService {
     private SimpMessagingTemplate messagingTemplate;
 
     private final Queue<WaitingUser> waitingUsers = new ConcurrentLinkedQueue<>();
+    private final Set<String> connectedUsers = ConcurrentHashMap.newKeySet();
+    private final Map<String, UserFilters> connectedUserFilters = new ConcurrentHashMap<>();
+
+    public void markUserConnected(String userId) {
+        connectedUsers.add(userId);
+    }
+
+    public void markUserDisconnected(String userId) {
+        connectedUsers.remove(userId);
+        connectedUserFilters.remove(userId);
+        removeUserFromQueue(userId);
+    }
 
     public void addUserToQueue(WaitingUser user) {
         // Remove if they are already in the queue to update their filters
         waitingUsers.removeIf(u -> u.getUserId().equals(user.getUserId()));
+        connectedUserFilters.put(user.getUserId(), user.getFilters());
         waitingUsers.offer(user);
     }
 
@@ -36,6 +50,12 @@ public class MatchmakingService {
 
     @Scheduled(fixedRate = 2000)
     public void processMatchmakingQueue() {
+        // Ghost User Cleanup: Remove users who didn't connect their WebSocket within 10 seconds of joining the queue
+        waitingUsers.removeIf(u -> 
+            u.getJoinedAt().isBefore(java.time.LocalDateTime.now().minusSeconds(10)) 
+            && !connectedUsers.contains(u.getUserId())
+        );
+
         if (waitingUsers.size() < 2) {
             return;
         }
@@ -51,16 +71,32 @@ public class MatchmakingService {
             WaitingUser bestMatch = null;
             int highestScore = -1;
 
-            for (int j = i + 1; j < usersList.size(); j++) {
+            // Limit iterations to prevent heavy N^2 lag
+            int maxComparisons = Math.min(usersList.size(), i + 100);
+            for (int j = i + 1; j < maxComparisons; j++) {
                 WaitingUser u2 = usersList.get(j);
                 if (matchedIds.contains(u2.getUserId())) continue;
 
                 int score = calculateCompatibility(u1.getFilters(), u2.getFilters());
                 
-                // score of -1 implies a hard constraint failed (e.g. wrong gender)
+                // Check if this is a fallback match (score < 1000)
+                if (score < 1000) {
+                    // Impose a 5-second wait before allowing fallback matches
+                    long waitA = java.time.Duration.between(u1.getJoinedAt(), java.time.LocalDateTime.now()).getSeconds();
+                    long waitB = java.time.Duration.between(u2.getJoinedAt(), java.time.LocalDateTime.now()).getSeconds();
+                    if (waitA < 5 && waitB < 5) {
+                        continue; // Wait a bit longer to find a perfect match
+                    }
+                }
+
                 if (score > highestScore) {
                     highestScore = score;
                     bestMatch = u2;
+                }
+                
+                // Break early if we found a very good match
+                if (highestScore >= 1000) {
+                    break;
                 }
             }
 
@@ -104,13 +140,19 @@ public class MatchmakingService {
     private int calculateCompatibility(UserFilters f1, UserFilters f2) {
         if (f1 == null || f2 == null) return 0;
         
-        // 1. Hard Constraints (Gender)
-        // If user1 picked specific genders, user2 MUST be in that list.
-        // Wait, the filter actually means "I am looking for *these* genders". 
-        // We lack a "my gender is X" field right now, so we will skip hard constraints and just score it.
-        
         int score = 0;
+
+        // Gender Priority Matching
+        boolean f1PrefersF2 = f1.getGender() == null || f1.getGender().isEmpty() || f1.getGender().contains(f2.getMyGender() != null ? f2.getMyGender() : "");
+        boolean f2PrefersF1 = f2.getGender() == null || f2.getGender().isEmpty() || f2.getGender().contains(f1.getMyGender() != null ? f1.getMyGender() : "");
+
+        if (f1PrefersF2 && f2PrefersF1) {
+            score += 1000; // Mutual preference met
+        } else {
+            score += 100; // Fallback score if gender preference mismatch
+        }
         
+        // We calculate overlap for smaller scoring preferences.
         score += calculateOverlap(f1.getGender(), f2.getGender()) * 5;
         score += calculateOverlap(f1.getMood(), f2.getMood()) * 1;
         score += calculateOverlap(f1.getTopics(), f2.getTopics()) * 2;
@@ -133,5 +175,30 @@ public class MatchmakingService {
 
     public List<WaitingUser> getWaitingUsers() {
         return new ArrayList<>(waitingUsers);
+    }
+
+    public Map<String, UserFilters> getConnectedUserFilters() {
+        return new HashMap<>(connectedUserFilters);
+    }
+
+    public Set<String> getConnectedUsers() {
+        return new HashSet<>(connectedUsers);
+    }
+
+    public List<ChatSession> getActiveSessions() {
+        return chatSessionRepository.findByStatus("active");
+    }
+    
+    @Scheduled(fixedRate = 60000)
+    public void cleanupStaleSessions() {
+        // Runs every minute to clean up active sessions where both users have disconnected
+        // e.g., due to a server restart
+        List<ChatSession> activeSessions = chatSessionRepository.findByStatus("active");
+        for (ChatSession session : activeSessions) {
+            if (!connectedUsers.contains(session.getUser1Id()) && !connectedUsers.contains(session.getUser2Id())) {
+                session.setStatus("closed");
+                chatSessionRepository.save(session);
+            }
+        }
     }
 }
