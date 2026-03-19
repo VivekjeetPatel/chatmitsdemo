@@ -56,8 +56,10 @@ public class AdminController {
         int heCount = 0;
         int sheCount = 0;
         for (com.mits.chatmits.model.UserFilters f : allFilters.values()) {
-            if ("He".equalsIgnoreCase(f.getMyGender())) heCount++;
-            else if ("She".equalsIgnoreCase(f.getMyGender())) sheCount++;
+            if (f.getGender() != null) {
+                if (f.getGender().contains("He")) heCount++;
+                if (f.getGender().contains("She")) sheCount++;
+            }
         }
         response.setTotalHeSelected(heCount);
         response.setTotalSheSelected(sheCount);

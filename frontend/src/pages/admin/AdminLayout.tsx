@@ -15,16 +15,16 @@ const AdminLayout = () => {
 
   const sidebarStyle: React.CSSProperties = {
     width: '260px',
-    borderRight: '1px solid #1e293b',
-    backgroundColor: 'rgba(15, 23, 42, 0.5)',
-    backdropFilter: 'blur(20px)',
+    borderRight: '1px solid #e2e8f0',
+    backgroundColor: '#ffffff',
     display: 'flex',
     flexDirection: 'column',
     padding: '2rem 1.5rem',
     position: 'sticky',
     top: 0,
     height: '100vh',
-    overflowY: 'auto'
+    overflowY: 'auto',
+    boxShadow: '4px 0 24px rgba(0, 0, 0, 0.02)'
   };
 
   const menuItemStyle = (isActive: boolean): React.CSSProperties => ({
@@ -32,17 +32,18 @@ const AdminLayout = () => {
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: '0.75rem 1rem',
-    borderRadius: '0.75rem',
-    transition: 'all 0.3s ease',
+    borderRadius: '12px',
+    transition: 'all 0.2s ease',
     marginBottom: '0.5rem',
     textDecoration: 'none',
-    backgroundColor: isActive ? 'rgba(255, 98, 0, 0.1)' : 'transparent',
-    color: isActive ? '#FF6200' : '#94a3b8',
-    border: isActive ? '1px solid rgba(255, 98, 0, 0.2)' : '1px solid transparent'
+    backgroundColor: isActive ? 'rgba(255, 98, 0, 0.08)' : 'transparent',
+    color: isActive ? '#FF6200' : '#64748b',
+    fontWeight: isActive ? 600 : 500,
+    border: 'none'
   });
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#020617', color: '#f1f5f9' }}>
+    <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: '#f8fafc', color: '#1e293b' }}>
       {/* Sidebar */}
       <aside style={sidebarStyle}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0 0.5rem', marginBottom: '2rem' }}>
@@ -71,14 +72,14 @@ const AdminLayout = () => {
                 style={menuItemStyle(isActive)}
                 onMouseEnter={(e) => {
                    if(!isActive) {
-                     e.currentTarget.style.backgroundColor = '#1e293b';
-                     e.currentTarget.style.color = '#e2e8f0';
+                     e.currentTarget.style.backgroundColor = '#f1f5f9';
+                     e.currentTarget.style.color = '#1e293b';
                    }
                 }}
                 onMouseLeave={(e) => {
                    if(!isActive) {
                      e.currentTarget.style.backgroundColor = 'transparent';
-                     e.currentTarget.style.color = '#94a3b8';
+                     e.currentTarget.style.color = '#64748b';
                    }
                 }}
               >
@@ -92,7 +93,8 @@ const AdminLayout = () => {
           })}
         </nav>
 
-        <div style={{ paddingTop: '2rem', marginTop: 'auto', borderTop: '1px solid #1e293b' }}>
+
+        <div style={{ paddingTop: '2rem', marginTop: 'auto', borderTop: '1px solid #f1f5f9' }}>
           <button style={{
             display: 'flex',
             alignItems: 'center',
@@ -101,14 +103,20 @@ const AdminLayout = () => {
             width: '100%',
             backgroundColor: 'transparent',
             border: 'none',
-            color: '#ef4444',
+            color: '#94a3b8',
             fontWeight: 500,
             cursor: 'pointer',
-            borderRadius: '0.75rem',
+            borderRadius: '12px',
             transition: 'all 0.3s'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(239, 68, 68, 0.05)'}
-          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          onMouseEnter={(e) => {
+             e.currentTarget.style.backgroundColor = '#fef2f2';
+             e.currentTarget.style.color = '#ef4444';
+          }}
+          onMouseLeave={(e) => {
+             e.currentTarget.style.backgroundColor = 'transparent';
+             e.currentTarget.style.color = '#94a3b8';
+          }}
           >
             <LogOut size={20} />
             <span>Logout</span>

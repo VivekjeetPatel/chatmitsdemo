@@ -51,9 +51,9 @@ const AdminSettings = () => {
         <p style={{ color: '#94a3b8' }}>Manage global platform configuration.</p>
       </div>
 
-      <Card style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '1.25rem', overflow: 'hidden', borderTop: '2px solid #FF6200' }}>
-        <Card.Header style={{ backgroundColor: 'transparent', borderBottom: '1px solid #1e293b', padding: '1.5rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold', fontSize: '1.125rem' }}>
+      <Card style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '1.25rem', overflow: 'hidden', borderTop: '4px solid #FF6200', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
+        <Card.Header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #f1f5f9', padding: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 'bold', fontSize: '1.125rem', color: '#1e293b' }}>
             <Clock size={20} color="#FF6200" />
             Schedule Configuration (IST Only)
           </div>
@@ -69,7 +69,7 @@ const AdminSettings = () => {
                     type="time" 
                     value={config?.dailyStartTime || ""} 
                     onChange={(e) => setConfig({...config, dailyStartTime: e.target.value})}
-                    style={{ backgroundColor: 'rgba(30, 41, 59, 0.5)', border: '1px solid #334155', color: 'white', height: '3rem', borderRadius: '0.75rem' }} 
+                    style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', color: '#1e293b', height: '3.5rem', borderRadius: '0.75rem', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.01)' }} 
                   />
                 </Form.Group>
               </Col>
@@ -80,7 +80,7 @@ const AdminSettings = () => {
                     type="time" 
                     value={config?.dailyEndTime || ""} 
                     onChange={(e) => setConfig({...config, dailyEndTime: e.target.value})}
-                    style={{ backgroundColor: 'rgba(30, 41, 59, 0.5)', border: '1px solid #334155', color: 'white', height: '3rem', borderRadius: '0.75rem' }} 
+                    style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', color: '#1e293b', height: '3.5rem', borderRadius: '0.75rem', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.01)' }} 
                   />
                 </Form.Group>
               </Col>
@@ -92,15 +92,15 @@ const AdminSettings = () => {
                 type="text"
                 readOnly
                 value="Asia/Kolkata (IST Restricted)" 
-                style={{ backgroundColor: 'rgba(30, 41, 59, 0.3)', border: '1px solid #1e293b', color: '#64748b', height: '3rem', borderRadius: '0.75rem' }}
+                style={{ backgroundColor: '#f8fafc', border: '1px solid #e2e8f0', color: '#94a3b8', height: '3.5rem', borderRadius: '0.75rem' }}
               />
             </Form.Group>
 
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem', backgroundColor: 'rgba(30, 41, 59, 0.3)', borderRadius: '1rem', border: '1px solid #1e293b' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.25rem', backgroundColor: '#f8fafc', borderRadius: '1rem', border: '1px solid #e2e8f0' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <Power color={config?.enabled ? '#10b981' : '#64748b'} />
+                <Power color={config?.enabled ? '#10b981' : '#94a3b8'} />
                 <div>
-                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.875rem' }}>Enable Platform</p>
+                  <p style={{ margin: 0, fontWeight: 600, fontSize: '0.875rem', color: '#1e293b' }}>Enable Platform</p>
                   <p style={{ margin: 0, fontSize: '0.75rem', color: '#64748b' }}>Allow users to participate.</p>
                 </div>
               </div>
@@ -112,8 +112,8 @@ const AdminSettings = () => {
               />
             </div>
 
-            <Button type="submit" style={{ backgroundColor: '#FF6200', border: 'none', height: '3rem', fontWeight: 'bold', borderRadius: '0.75rem' }}>
-              Update Schedule
+            <Button type="submit" style={{ backgroundColor: '#FF6200', border: 'none', height: '3.5rem', fontWeight: '600', borderRadius: '0.75rem', boxShadow: '0 4px 12px rgba(255, 98, 0, 0.2)' }}>
+              Save Configuration
             </Button>
           </Form>
         </Card.Body>

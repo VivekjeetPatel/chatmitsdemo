@@ -3,7 +3,7 @@ import { Row, Col, Card, Badge, Alert } from 'react-bootstrap';
 import { Filter, Lock } from "lucide-react";
 
 export const FILTER_OPTIONS = {
-  gender: ["Male", "Female", "Non-binary", "Prefer not to say"],
+  gender: ["He", "She"],
   mood: ["Happy", "Relaxed", "Energetic", "Creative", "Focused", "Adventurous", "Thoughtful", "Playful", "Calm"],
   topics: ["Technology", "Sports", "Music", "Movies", "Books", "Travel", "Food", "Gaming", "Art"],
   hobbies: ["Reading", "Cooking", "Photography", "Dancing", "Hiking", "Painting", "Gardening", "Yoga", "Coding"],
@@ -22,15 +22,15 @@ const FilterManagement = () => {
           <h1 style={{ fontSize: '1.875rem', fontWeight: 'bold', letterSpacing: '-0.025em' }}>Filter Management</h1>
           <p style={{ color: '#94a3b8' }}>View available choices for user preferences in the platform.</p>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#0f172a', padding: '0.5rem 1rem', borderRadius: '1rem', border: '1px solid #1e293b' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: '#ffffff', padding: '0.50rem 1rem', borderRadius: '1rem', border: '1px solid #e2e8f0', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
           <Filter size={16} color="#FF6200" />
           <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#64748b', textTransform: 'uppercase' }}>{totalOptions} Total</span>
         </div>
       </div>
 
-      <Alert variant="info" style={{ backgroundColor: 'rgba(255, 98, 0, 0.1)', borderColor: 'rgba(255, 98, 0, 0.2)', color: '#FF6200' }}>
+      <Alert variant="info" style={{ backgroundColor: 'rgba(255, 98, 0, 0.08)', borderColor: 'rgba(255, 98, 0, 0.2)', color: '#FF6200', borderRadius: '12px' }}>
         <Lock size={16} style={{ marginRight: '8px' }} />
-        <strong>Notice:</strong> Filter options are currently hardcoded in the Matchmaking Engine for performance optimizations. Any changes require a codebase deployment.
+        <strong>Static Options:</strong> Filter categories are hardcoded in the Matchmaking Engine for performance optimizations. Any changes require a codebase deployment.
       </Alert>
 
       <Row className="g-4">
@@ -38,18 +38,18 @@ const FilterManagement = () => {
           const catFilters = FILTER_OPTIONS[category as keyof typeof FILTER_OPTIONS];
           return (
             <Col xl={4} md={6} key={category}>
-              <Card style={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '1rem', height: '100%' }}>
-                <Card.Header style={{ backgroundColor: 'transparent', borderBottom: '1px solid #1e293b', padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Card style={{ backgroundColor: '#ffffff', border: '1px solid #e2e8f0', borderRadius: '1rem', height: '100%', boxShadow: '0 4px 12px rgba(0,0,0,0.03)' }}>
+                <Card.Header style={{ backgroundColor: '#ffffff', borderBottom: '1px solid #f1f5f9', padding: '1.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                     <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#FF6200' }} />
-                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#64748b' }}>{category}</span>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.1em', color: '#1e293b' }}>{category}</span>
                   </div>
-                  <Badge style={{ backgroundColor: '#1e293b', color: '#94a3b8', fontWeight: 'bold' }}>{catFilters.length}</Badge>
+                  <Badge style={{ backgroundColor: '#f1f5f9', color: '#64748b', fontWeight: 'bold', border: '1px solid #e2e8f0' }}>{catFilters.length}</Badge>
                 </Card.Header>
-                <Card.Body style={{ padding: '1rem' }}>
+                <Card.Body style={{ padding: '1.25rem' }}>
                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                     {catFilters.length === 0 ? (
-                      <span style={{ fontSize: '0.75rem', color: '#475569', fontStyle: 'italic' }}>No options set</span>
+                      <span style={{ fontSize: '0.75rem', color: '#94a3b8', fontStyle: 'italic' }}>No options set</span>
                     ) : (
                       catFilters.map(filter => (
                         <div 
@@ -58,12 +58,13 @@ const FilterManagement = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '0.5rem',
-                            backgroundColor: '#1e293b',
-                            padding: '0.25rem 0.75rem',
+                            backgroundColor: '#f8fafc',
+                            padding: '0.375rem 0.875rem',
                             borderRadius: '0.5rem',
-                            border: '1px solid #334155',
-                            fontSize: '0.875rem',
-                            color: '#e2e8f0'
+                            border: '1px solid #e2e8f0',
+                            fontSize: '0.8125rem',
+                            color: '#475569',
+                            fontWeight: 500
                           }}
                         >
                           {filter}

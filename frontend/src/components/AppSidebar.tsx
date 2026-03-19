@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MessageSquarePlus, X } from "lucide-react";
 import { Button, Form } from "react-bootstrap";
 import { UserFilters } from "./InterestFilterModal";

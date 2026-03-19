@@ -84,7 +84,7 @@ public class MatchmakingService {
                     // Impose a 5-second wait before allowing fallback matches
                     long waitA = java.time.Duration.between(u1.getJoinedAt(), java.time.LocalDateTime.now()).getSeconds();
                     long waitB = java.time.Duration.between(u2.getJoinedAt(), java.time.LocalDateTime.now()).getSeconds();
-                    if (waitA < 5 && waitB < 5) {
+                    if (waitA < 5 || waitB < 5) {
                         continue; // Wait a bit longer to find a perfect match
                     }
                 }
@@ -142,18 +142,27 @@ public class MatchmakingService {
         
         int score = 0;
 
-        // Gender Priority Matching
-        boolean f1PrefersF2 = f1.getGender() == null || f1.getGender().isEmpty() || f1.getGender().contains(f2.getMyGender() != null ? f2.getMyGender() : "");
-        boolean f2PrefersF1 = f2.getGender() == null || f2.getGender().isEmpty() || f2.getGender().contains(f1.getMyGender() != null ? f1.getMyGender() : "");
+        // Gender Seeker Matching (Simplified - no 'myGender' tracking)
+        boolean f1SeeksHe = f1.getGender() != null && f1.getGender().contains("He");
+        boolean f1SeeksShe = f1.getGender() != null && f1.getGender().contains("She");
+        boolean f2SeeksHe = f2.getGender() != null && f2.getGender().contains("He");
+        boolean f2SeeksShe = f2.getGender() != null && f2.getGender().contains("She");
 
-        if (f1PrefersF2 && f2PrefersF1) {
-            score += 1000; // Mutual preference met
+        // Logic: Optimal if they seek DIFFERENT genders (indicating opposite genders seeking each other)
+        boolean f1SingleHe = f1SeeksHe && !f1SeeksShe;
+        boolean f1SingleShe = f1SeeksShe && !f1SeeksHe;
+        boolean f2SingleHe = f2SeeksHe && !f2SeeksShe;
+        boolean f2SingleShe = f2SeeksShe && !f2SeeksHe;
+
+        if ((f1SingleHe && f2SingleShe) || (f1SingleShe && f2SingleHe)) {
+            score += 1000;
+        } else if (f1.getGender() == null || f1.getGender().isEmpty() || f2.getGender() == null || f2.getGender().isEmpty()) {
+            score += 500; // Partial priority for people with no requirements
         } else {
-            score += 100; // Fallback score if gender preference mismatch
+            score += 100; // Same seeker gender or overlapping multiple selections
         }
         
-        // We calculate overlap for smaller scoring preferences.
-        score += calculateOverlap(f1.getGender(), f2.getGender()) * 5;
+        // Minor overlaps for other filters
         score += calculateOverlap(f1.getMood(), f2.getMood()) * 1;
         score += calculateOverlap(f1.getTopics(), f2.getTopics()) * 2;
         score += calculateOverlap(f1.getHobbies(), f2.getHobbies()) * 3;
