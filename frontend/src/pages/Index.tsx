@@ -539,16 +539,30 @@ const Index = () => {
     const currentX = e.targetTouches[0].clientX;
     const diff = currentX - touchStartX;
     
-    // Swipe right to open sidebar
-    if (diff > 50 && !sidebarOpen) {
-      setSidebarOpen(true);
-      setTouchStartX(null);
+    // SWIPE RIGHT (Left to Right)
+    if (diff > 50) {
+      if (isSettingsOpen) {
+        // If settings is open, swipe right closes it
+        setIsSettingsOpen(false);
+        setTouchStartX(null);
+      } else if (!sidebarOpen) {
+        // If nothing is open, swipe right opens sidebar
+        setSidebarOpen(true);
+        setTouchStartX(null);
+      }
     }
     
-    // Swipe left to open settings
-    if (diff < -50 && !isSettingsOpen) {
-      setIsSettingsOpen(true);
-      setTouchStartX(null);
+    // SWIPE LEFT (Right to Left)
+    if (diff < -50) {
+      if (sidebarOpen) {
+        // If sidebar is open, swipe left closes it
+        setSidebarOpen(false);
+        setTouchStartX(null);
+      } else if (!isSettingsOpen) {
+        // If nothing is open, swipe left opens settings
+        setIsSettingsOpen(true);
+        setTouchStartX(null);
+      }
     }
   };
 
