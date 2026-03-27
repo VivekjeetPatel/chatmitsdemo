@@ -68,7 +68,7 @@ export const InterestFilterModal = ({
   return (
     <Modal show={isOpen} onHide={onClose} size="lg" centered scrollable>
       <Modal.Header closeButton className="border-bottom-0 pb-0">
-        <Modal.Title className="fw-bold" style={{ color: '#FF6200' }}>Interest Filters</Modal.Title>
+        <Modal.Title className="fw-bold" style={{ color: 'var(--accent-color)' }}>Interest Filters</Modal.Title>
       </Modal.Header>
       
       <Modal.Body className="pt-3">
@@ -77,7 +77,7 @@ export const InterestFilterModal = ({
 
           {Object.entries(FILTER_OPTIONS).map(([category, options]) => (
             <div key={category}>
-              <h5 className="text-capitalize mb-3" style={{ color: '#FF6200' }}>
+              <h5 className="text-capitalize mb-3" style={{ color: 'var(--accent-color)' }}>
                 {category === 'gender' ? 'Looking For' : category}
               </h5>
               <div className="row g-2">
@@ -87,10 +87,11 @@ export const InterestFilterModal = ({
                   return (
                     <div className="col-sm-6 col-md-4" key={option}>
                       <div 
-                        className={`p-2 border rounded-3 d-flex align-items-center gap-2 cursor-pointer transition-all ${isChecked ? 'shadow-sm' : 'bg-white'}`}
+                        className={`p-2 border rounded-3 d-flex align-items-center gap-2 cursor-pointer transition-all ${isChecked ? 'shadow-sm' : ''}`}
                         style={{ 
-                          borderColor: isChecked ? '#FF6200' : '#dee2e6', 
-                          backgroundColor: isChecked ? '#fff4eb' : '#fff',
+                          borderColor: isChecked ? 'var(--accent-color)' : 'var(--border-color)', 
+                          backgroundColor: isChecked ? 'color-mix(in srgb, var(--accent-color) 15%, transparent)' : 'var(--bg-primary)',
+                          color: 'var(--text-primary)',
                           cursor: 'pointer' 
                         }}
                         onClick={() => handleToggle(category as keyof UserFilters, option)}
@@ -123,7 +124,7 @@ export const InterestFilterModal = ({
           <Button variant="outline-secondary" onClick={onClose} className="rounded-pill px-4">
             Cancel
           </Button>
-          <Button variant="primary" onClick={handleApply} className="rounded-pill px-4" style={{ backgroundColor: '#FF6200', borderColor: '#FF6200' }}>
+          <Button variant="primary" onClick={handleApply} className="rounded-pill px-4 border-0" style={{ backgroundColor: 'var(--accent-color)', color: '#fff' }}>
             Apply Filters
           </Button>
         </div>

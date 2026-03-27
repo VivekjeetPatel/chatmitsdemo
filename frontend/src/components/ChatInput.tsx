@@ -55,8 +55,8 @@ export const ChatInput = ({
         onChange={handleFileChange} 
       />
       <div 
-        className={`d-flex align-items-center gap-3 px-3 py-2 bg-white border rounded-pill shadow-sm ${disabled ? 'opacity-75' : ''}`}
-        style={disabled ? { cursor: 'not-allowed' } : {}}
+        className={`d-flex align-items-center gap-3 px-3 py-2 border rounded-pill shadow-sm ${disabled ? 'opacity-75' : ''}`}
+        style={{ backgroundColor: 'var(--bg-secondary)', ...(disabled ? { cursor: 'not-allowed' } : {}) }}
       >
         <Button
           type="button"
@@ -77,7 +77,7 @@ export const ChatInput = ({
           placeholder={disabled ? disabledMessage : placeholder}
           disabled={disabled}
           className="flex-grow-1 border-0 shadow-none bg-transparent"
-          style={{ resize: 'none', overflowY: 'hidden' }}
+          style={{ resize: 'none', overflowY: 'hidden', color: 'var(--text-primary)' }}
           onKeyDown={(e) => {
             if (e.key === 'Enter' && !e.shiftKey && !disabled) {
               e.preventDefault();
@@ -95,8 +95,8 @@ export const ChatInput = ({
           style={{ 
             width: '40px', 
             height: '40px', 
-            backgroundColor: '#FF6200', 
-            borderColor: '#FF6200',
+            backgroundColor: 'var(--accent-color)', 
+            borderColor: 'var(--accent-color)',
             transform: `rotate(${message.trim() ? '0deg' : '0deg'}) scale(${message.trim() ? '1.1' : '1'})`,
             opacity: disabled ? 0.5 : 1
           }}

@@ -25,9 +25,13 @@ interface MainContentProps {
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   stompClient: any;
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (open: boolean) => void;
+  isDarkMode: boolean;
+  onToggleDarkMode: (isDark: boolean) => void;
 }
 
-const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, setMatchResult, userId, sidebarOpen, setSidebarOpen, stompClient, isSettingsOpen, setIsSettingsOpen }: MainContentProps & { setMatchResult: (result: any) => void, isSettingsOpen: boolean, setIsSettingsOpen: (open: boolean) => void }) => {
+const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, setMatchResult, userId, sidebarOpen, setSidebarOpen, stompClient, isSettingsOpen, setIsSettingsOpen, isDarkMode, onToggleDarkMode }: MainContentProps & { setMatchResult: (result: any) => void }) => {
   const isMobile = useIsMobile();
   const [callWindow, setCallWindow] = useState<{ type: "voice" | "video"; active: boolean } | null>(null);
   const [callWindowPos, setCallWindowPos] = useState({ x: 60, y: 130 });
@@ -290,9 +294,9 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 
   return (
     <>
-      <div className="flex-grow-1 d-flex flex-column vh-100 overflow-hidden bg-white">
+      <div className="flex-grow-1 d-flex flex-column vh-100 overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
         {/* Header */}
-        <header className="sticky-top bg-white border-bottom shadow-sm z-3">
+        <header className="sticky-top border-bottom shadow-sm z-3" style={{ backgroundColor: 'var(--bg-primary)' }}>
           <div className="d-flex align-items-center justify-content-between px-4" style={{ height: '64px' }}>
             <div className="d-flex align-items-center gap-3">
               {(isMobile) && (
@@ -308,14 +312,14 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
             </div>
             
             {!matchResult?.matched && (
-              <h1 className="h4 font-brand mb-0 position-absolute start-50 translate-middle-x" style={{ color: '#FF6200' }}>ChatMITS</h1>
+              <h1 className="h4 font-brand mb-0 position-absolute start-50 translate-middle-x" style={{ color: 'var(--accent-color)' }}>ChatMITS</h1>
             )}
             
             <div className="d-flex align-items-center gap-2">
               {matchResult?.matched && matchResult.session && (<> 
                 <Dropdown align="end">
-                  <Dropdown.Toggle variant="outline-secondary" size="sm" className="rounded-pill px-3 d-flex align-items-center border-0 bg-light">
-                    <Phone size={16} className="me-2" style={{ color: '#FF6200' }}/> Call
+                  <Dropdown.Toggle variant="outline-secondary" size="sm" className="rounded-pill px-3 d-flex align-items-center border-0" style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}>
+                    <Phone size={16} className="me-2" style={{ color: 'var(--accent-color)' }}/> Call
                   </Dropdown.Toggle>
                   <Dropdown.Menu className="shadow-sm border-0 rounded-4 mt-2">
                     <Dropdown.Item 
@@ -323,7 +327,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                       disabled={!settings.voiceCall || (callStatus !== 'idle' && isVideoCall)}
                       className="d-flex align-items-center py-2"
                     >
-                      <Mic size={16} className="me-2" style={{ color: '#FF6200' }} /> {callStatus !== 'idle' && !isVideoCall ? "End Voice Call" : "Voice Call"}
+                      <Mic size={16} className="me-2" style={{ color: 'var(--accent-color)' }} /> {callStatus !== 'idle' && !isVideoCall ? "End Voice Call" : "Voice Call"}
                     </Dropdown.Item>
                     <Dropdown.Item 
                       onClick={handleVideoCallClick} 
@@ -337,7 +341,8 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               </>)}
               <Button
                 variant="light"
-                className="rounded-circle p-2"
+                className="rounded-circle p-2 border-0"
+                style={{ backgroundColor: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
                 onClick={() => setIsSettingsOpen(!isSettingsOpen)}
               >
                 {isSettingsOpen ? <X size={20} /> : <MoreVertical size={20} />}
@@ -358,6 +363,8 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
             setIsFeedbackOpen(true);
             setIsSettingsOpen(false);
           }}
+          isDarkMode={isDarkMode}
+          onToggleDarkMode={onToggleDarkMode}
         />
 
         {/* Feedback Modal */}
@@ -379,8 +386,8 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
           
           {/* Incoming Call Overlay */}
           {callStatus === 'ringing' && !localStream && (
-             <div className="position-absolute z-3 rounded-4 bg-white border shadow-lg d-flex flex-column align-items-center justify-content-center p-4"
-                  style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 300, zIndex: 9999 }}>
+             <div className="position-absolute z-3 rounded-4 border shadow-lg d-flex flex-column align-items-center justify-content-center p-4"
+                  style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 300, zIndex: 9999, backgroundColor: 'var(--bg-primary)' }}>
                <h4 className="mb-3">Incoming {isVideoCall ? 'Video' : 'Voice'} Call</h4>
                <div className="d-flex gap-3">
                  <Button variant="success" onClick={answerCall}>Accept</Button>
@@ -423,7 +430,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                   onMouseDown={startResizeCallWin}
                   style={{
                     width: '20px', height: '20px', cursor: 'nwse-resize', zIndex: 10,
-                    borderBottom: '3px solid #FF6200', borderRight: '3px solid #FF6200', borderBottomRightRadius: '12px'
+                    borderBottom: '3px solid var(--accent-color)', borderRight: '3px solid var(--accent-color)', borderBottomRightRadius: '12px'
                   }}
                 />
               )}
@@ -433,7 +440,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
           <audio ref={ringtoneRef} src="/ringtone.mp3" preload="auto" style={{display:'none'}} />
           
           {matchResult?.matched && matchResult.session ? (
-            <div className="w-100 max-w-4xl d-flex flex-column h-100 bg-white my-3" style={{ maxHeight: 'calc(100vh - 120px)', maxWidth: '900px' }}>
+            <div className="w-100 max-w-4xl d-flex flex-column h-100 my-3" style={{ maxHeight: 'calc(100vh - 120px)', maxWidth: '900px' }}>
               <div className="flex-grow-1 overflow-hidden">
                 <ChatInterface
                   sessionId={matchResult.session.id}
@@ -449,7 +456,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                   }}
                 />
               </div>
-              <div className="p-4 bg-white">
+              <div className="p-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
                 <ChatInput
                    onSendMessage={handleSendMessage}
                    onVoiceInput={handleVoiceInput}
@@ -470,7 +477,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                   <p className="text-secondary small mb-1">Queue position: {matchResult.queuePosition}</p>
                 )}
                 {isSearching && (
-                  <p className="fs-5 fw-medium ps-2 font-playful" style={{ color: '#FF6200' }}>
+                  <p className="fs-5 fw-medium ps-2 font-playful" style={{ color: 'var(--accent-color)' }}>
                     Searching for match...
                   </p>
                 )}
@@ -500,6 +507,11 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = localStorage.getItem('chatmits_dark_mode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  
   const [filters, setFilters] = useState<UserFilters>({
     myGender: undefined,
     gender: [],
@@ -544,6 +556,26 @@ const Index = () => {
     setTouchStartX(null);
   };
 
+  // Persist dark mode
+  useEffect(() => {
+    localStorage.setItem('chatmits_dark_mode', JSON.stringify(isDarkMode));
+  }, [isDarkMode]);
+
+  // Dynamic Theme processing based on gender selection
+  useEffect(() => {
+    if (filters.gender.length === 1) {
+      if (filters.gender[0] === 'He') {
+        document.documentElement.style.setProperty('--accent-color', '#007bff');
+      } else if (filters.gender[0] === 'She') {
+        document.documentElement.style.setProperty('--accent-color', '#e83e8c');
+      } else {
+        document.documentElement.style.setProperty('--accent-color', '#FF6200');
+      }
+    } else {
+      document.documentElement.style.setProperty('--accent-color', '#FF6200');
+    }
+  }, [filters.gender]);
+
   if (statusLoading) return null;
 
   // Need a way to manually reset the match result locally when chat is closed
@@ -575,7 +607,8 @@ const Index = () => {
 
   return (
     <div 
-      className="d-flex vh-100 vw-100 overflow-hidden bg-light position-relative"
+      className={`d-flex vh-100 vw-100 overflow-hidden position-relative ${isDarkMode ? 'dark-theme' : ''}`}
+      style={{ backgroundColor: 'var(--bg-primary)', color: 'var(--text-primary)' }}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -594,7 +627,8 @@ const Index = () => {
           width: isMobile ? '85vw' : '300px', 
           transition: 'transform 0.3s ease-out',
           transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
-          backgroundColor: '#f8f9fa'
+          backgroundColor: 'var(--bg-secondary)',
+          borderColor: 'var(--border-color)'
         }}
       >
          <AppSidebar 
@@ -623,6 +657,8 @@ const Index = () => {
         stompClient={stompClient}
         isSettingsOpen={isSettingsOpen}
         setIsSettingsOpen={setIsSettingsOpen}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={setIsDarkMode}
       />
 
       {/* Toasts overlay */}

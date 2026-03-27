@@ -106,8 +106,8 @@ export const ChatInterface = ({
                   className={`p-3 rounded-4 shadow-sm text-break ${type === 'IMAGE' ? 'p-2' : ''}`}
                   style={{ 
                     maxWidth: '75%', 
-                    backgroundColor: isMe ? '#FF6200' : '#f8f9fa',
-                    color: isMe ? '#fff' : '#000'
+                    backgroundColor: isMe ? 'var(--accent-color)' : 'var(--bg-secondary)',
+                    color: isMe ? '#fff' : 'var(--text-primary)'
                   }}
                 >
                   {type === 'IMAGE' ? (

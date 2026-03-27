@@ -1,8 +1,28 @@
 /* Custom overrides for Bootstrap */
+:root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #212529;
+  --text-secondary: #6c757d;
+  --accent-color: #FF6200;
+  --border-color: #dee2e6;
+}
+
+.dark-theme {
+  --bg-primary: #121212;
+  --bg-secondary: #1e1e1e;
+  --text-primary: #f8f9fa;
+  --text-secondary: #adb5bd;
+  --border-color: #333333;
+}
+
 body {
   margin: 0;
   padding: 0;
   font-family: 'Nunito', system-ui, -apple-system, sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s, color 0.3s;
 }
 
 h1, h2, h3, h4, h5, h6, .font-playful {
@@ -13,19 +33,83 @@ h1, h2, h3, h4, h5, h6, .font-playful {
   font-family: 'Pacifico', cursive;
 }
 
-/* Custom Orange Range Slider */
+/* Custom Dynamic Range Slider */
 input[type="range"].form-range::-webkit-slider-thumb {
-  background-color: #FF6200;
+  background-color: var(--accent-color);
 }
 
 input[type="range"].form-range::-moz-range-thumb {
-  background-color: #FF6200;
+  background-color: var(--accent-color);
 }
 
 input[type="range"].form-range:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem rgba(255, 98, 0, 0.25);
+  box-shadow: 0 0 0 1px var(--bg-primary), 0 0 0 0.25rem color-mix(in srgb, var(--accent-color) 25%, transparent);
 }
 
 input[type="range"].form-range:focus::-moz-range-thumb {
-  box-shadow: 0 0 0 1px #fff, 0 0 0 0.25rem rgba(255, 98, 0, 0.25);
+  box-shadow: 0 0 0 1px var(--bg-primary), 0 0 0 0.25rem color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+/* Bootstrap Component Dark Theme Compatibility */
+.dark-theme .modal-content,
+.dark-theme .offcanvas {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark-theme .modal-header,
+.dark-theme .modal-footer,
+.dark-theme .border-bottom,
+.dark-theme .border-top,
+.dark-theme .border-end,
+.dark-theme .border {
+  border-color: var(--border-color) !important;
+}
+
+.dark-theme .dropdown-menu {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+.dark-theme .dropdown-item {
+  color: var(--text-primary);
+}
+
+.dark-theme .dropdown-item:hover {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
+.dark-theme .text-dark {
+  color: var(--text-primary) !important;
+}
+
+.dark-theme .bg-white {
+  background-color: var(--bg-primary) !important;
+}
+
+.dark-theme .bg-light {
+  background-color: var(--bg-secondary) !important;
+}
+
+/* Custom Switch overrides */
+.custom-switch .form-check-input:checked {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+.custom-switch .form-check-input:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 0.25rem color-mix(in srgb, var(--accent-color) 25%, transparent);
+}
+
+.dark-theme .form-check-input {
+  background-color: var(--bg-secondary);
+  border-color: var(--border-color);
+}
+
+.btn-close-white {
+  filter: invert(1) grayscale(100%) brightness(200%);
 }
