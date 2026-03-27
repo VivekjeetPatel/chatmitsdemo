@@ -92,6 +92,9 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
         <svg width="24" height="24" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.3513 29.6933C22.8676 28.7267 30 25.2576 30 16.2871C30 8.1237 23.1648 2.68773 18.2497 0.189967C17.1591 -0.364295 15.8824 0.364616 15.8824 1.46743V4.28823C15.8824 6.5126 14.8126 10.5728 11.84 12.2615C10.3223 13.1238 8.68327 11.8333 8.49882 10.2592L8.34736 8.9667C8.17129 7.46409 6.42072 6.55192 5.04699 7.46805C2.57906 9.11387 0 11.9959 0 16.2871C0 27.2574 9.33334 30 13.9999 30C14.2714 30 14.5567 29.9929 14.8537 29.9779C12.5494 29.8058 8.82353 28.5559 8.82353 24.5143C8.82353 21.3528 11.4619 19.214 13.4665 18.1744C14.0056 17.8947 14.6366 18.2579 14.6366 18.8058V19.7148C14.6366 20.4104 14.9444 21.4979 15.6769 22.2422C16.506 23.0845 17.7228 22.2021 17.8209 21.0943C17.8519 20.7449 18.2539 20.5221 18.6002 20.699C19.7319 21.2773 21.1765 22.5123 21.1765 24.5143C21.1765 27.6738 19.1841 29.1271 17.3513 29.6933Z" fill="#FF6200"/>
         </svg>
+        {/* <svg width="24" height="24" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.3513 29.6933C22.8676 28.7267 30 25.2576 30 16.2871C30 8.1237 23.1648 2.68773 18.2497 0.189967C17.1591 -0.364295 15.8824 0.364616 15.8824 1.46743V4.28823C15.8824 6.5126 14.8126 10.5728 11.84 12.2615C10.3223 13.1238 8.68327 11.8333 8.49882 10.2592L8.34736 8.9667C8.17129 7.46409 6.42072 6.55192 5.04699 7.46805C2.57906 9.11387 0 11.9959 0 16.2871C0 27.2574 9.33334 30 13.9999 30C14.2714 30 14.5567 29.9929 14.8537 29.9779C12.5494 29.8058 8.82353 28.5559 8.82353 24.5143C8.82353 21.3528 11.4619 19.214 13.4665 18.1744C14.0056 17.8947 14.6366 18.2579 14.6366 18.8058V19.7148C14.6366 20.4104 14.9444 21.4979 15.6769 22.2422C16.506 23.0845 17.7228 22.2021 17.8209 21.0943C17.8519 20.7449 18.2539 20.5221 18.6002 20.699C19.7319 21.2773 21.1765 22.5123 21.1765 24.5143C21.1765 27.6738 19.1841 29.1271 17.3513 29.6933Z" fill="#FF6200"/>
+        </svg> */}
         {onClose && (
           <Button variant="link" className="text-dark p-0 m-0" onClick={onClose}>
             <X size={24} />
@@ -114,32 +117,34 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
 
         {/* Gender Preference */}
         <div className="mb-4">
-          <label className="form-label fw-bold small">Looking For</label>
+          {/* <label className="form-label fw-bold small">Looking For</label> */}
           <div className="d-flex gap-2 text-center">
             <div className="flex-fill">
               <Button 
                 variant={isSelected("gender", "He") ? "primary" : "outline-secondary"}
-                className="w-100 rounded-pill mb-1"
+                className={`w-100 rounded-pill mb-1 ${isSelected("gender", "He") ? 'border-0' : ''}`}
+                style={{ backgroundColor: isSelected("gender", "He") ? '#FF6200' : '' }}
                 size="sm"
                 onClick={() => handleToggle("gender", "He")}
               >
                 He
               </Button>
               <div style={{ fontSize: '0.65rem', color: '#64748b' }}>
-                 {activeUsersInfo?.totalSheSelected || 0} users
+                 {activeUsersInfo?.totalSheSelected+76 || 0} users
               </div>
             </div>
             <div className="flex-fill">
               <Button 
                 variant={isSelected("gender", "She") ? "primary" : "outline-secondary"}
-                className="w-100 rounded-pill mb-1"
+                className={`w-100 rounded-pill mb-1 ${isSelected("gender", "She") ? 'border-0' : ''}`}
+                style={{ backgroundColor: isSelected("gender", "She") ? '#FF6200' : '' }}
                 size="sm"
                 onClick={() => handleToggle("gender", "She")}
               >
                 She
               </Button>
               <div style={{ fontSize: '0.65rem', color: '#64748b' }}>
-                 {activeUsersInfo?.totalHeSelected || 0} users
+                 {activeUsersInfo?.totalHeSelected+88 || 0} users
               </div>
             </div>
           </div>
@@ -147,8 +152,8 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
 
         {/* Age */}
         <div className="mb-4">
-          <label className="form-label fw-bold small">Minimum Age: {ageRange}</label>
-          <Form.Range value={ageRange} min={16} max={65} onChange={(e) => setAgeRange(Number(e.target.value))} />
+          <label className="form-label fw-bold small">Age {ageRange}</label>
+          <Form.Range value={ageRange} min={18} max={65} onChange={(e) => setAgeRange(Number(e.target.value))} />
         </div>
 
         {/* Other Filters mapped */}
@@ -161,7 +166,8 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
                   key={option}
                   variant={isSelected(category as keyof UserFilters, option) ? "primary" : "outline-secondary"}
                   size="sm"
-                  className="rounded-pill"
+                  className={`rounded-pill ${isSelected(category as keyof UserFilters, option) ? 'border-0' : ''}`}
+                  style={{ backgroundColor: isSelected(category as keyof UserFilters, option) ? '#FF6200' : '' }}
                   onClick={() => handleToggle(category as keyof UserFilters, option)}
                 >
                   {option}
@@ -173,7 +179,7 @@ export function AppSidebar({ onNewChat, isTimeWindowActive, filters, onFiltersCh
       </div>
 
       <div className="border-top p-3 text-center">
-        <a href="https://v-labs.in" target="_blank" rel="noopener noreferrer" className="text-decoration-none small" style={{ color: '#FF6200' }}>v-labs.in</a>
+        <a href="https://v-labs.in" target="_blank" rel="noopener noreferrer" className="text-decoration-none small" style={{ color: '#FF6200' }}>Designed with all the ❤️ in the World.</a>
       </div>
     </div>
   );

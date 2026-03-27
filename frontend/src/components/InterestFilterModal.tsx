@@ -87,8 +87,12 @@ export const InterestFilterModal = ({
                   return (
                     <div className="col-sm-6 col-md-4" key={option}>
                       <div 
-                        className={`p-2 border rounded-3 d-flex align-items-center gap-2 cursor-pointer transition-all ${isChecked ? 'bg-light border-primary' : 'bg-white'}`}
-                        style={{ borderColor: isChecked ? '#FF6200' : '#dee2e6', cursor: 'pointer' }}
+                        className={`p-2 border rounded-3 d-flex align-items-center gap-2 cursor-pointer transition-all ${isChecked ? 'shadow-sm' : 'bg-white'}`}
+                        style={{ 
+                          borderColor: isChecked ? '#FF6200' : '#dee2e6', 
+                          backgroundColor: isChecked ? '#fff4eb' : '#fff',
+                          cursor: 'pointer' 
+                        }}
                         onClick={() => handleToggle(category as keyof UserFilters, option)}
                       >
                         <Form.Check 

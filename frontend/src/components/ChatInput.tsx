@@ -1,4 +1,4 @@
-import { Plus, Mic } from "lucide-react";
+import { Plus, Mic, Send } from "lucide-react";
 import { useState, useRef } from "react";
 import { Button, Form, OverlayTrigger, Tooltip } from "react-bootstrap";
 
@@ -17,7 +17,7 @@ export const ChatInput = ({
   onMediaUpload,
   placeholder = "Say something nicer...",
   disabled = false,
-  disabledMessage = "Select filters first, then click New chat to start chatting."
+  disabledMessage = "Select filters, then click New chat to start chatting."
 }: ChatInputProps) => {
   const [message, setMessage] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -87,14 +87,21 @@ export const ChatInput = ({
         />
         
         <Button
-          type="button"
+          type={message.trim() ? "submit" : "button"}
           variant="primary"
-          onClick={onVoiceInput}
+          onClick={message.trim() ? undefined : onVoiceInput}
           disabled={disabled}
-          className="rounded-circle d-flex align-items-center justify-content-center p-2 text-white"
-          style={{ width: '40px', height: '40px', backgroundColor: '#FF6200', borderColor: '#FF6200' }}
+          className="rounded-circle d-flex align-items-center justify-content-center p-2 text-white transition-all"
+          style={{ 
+            width: '40px', 
+            height: '40px', 
+            backgroundColor: '#FF6200', 
+            borderColor: '#FF6200',
+            transform: `rotate(${message.trim() ? '0deg' : '0deg'}) scale(${message.trim() ? '1.1' : '1'})`,
+            opacity: disabled ? 0.5 : 1
+          }}
         >
-          <Mic size={20} />
+          {message.trim() ? <Send size={20} /> : <Mic size={20} />}
         </Button>
       </div>
     </Form>

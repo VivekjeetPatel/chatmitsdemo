@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { MoreVertical, X } from "lucide-react";
-import { Button } from "react-bootstrap";
+import { MoreVertical, X, PanelLeft, Phone, Mic, Video } from "lucide-react";
+import { Button, Dropdown, ToastContainer, Toast } from "react-bootstrap";
 import { ChatInput } from "../components/ChatInput";
 import { SettingsPanel } from "../components/SettingsPanel";
 import { FeedbackModal } from "../components/FeedbackModal";
@@ -13,6 +13,7 @@ import { VoiceVisualizer } from "../components/VoiceVisualizer";
 import { useWebRTC } from "../hooks/useWebRTC";
 import { CallInterface } from "../components/CallInterface";
 import { usePlatformStatus } from "../hooks/usePlatformStatus";
+import { useToast } from "../hooks/use-toast";
 
 interface MainContentProps {
   filters: UserFilters;
@@ -26,7 +27,7 @@ interface MainContentProps {
   stompClient: any;
 }
 
-const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, setMatchResult, userId, sidebarOpen, setSidebarOpen, stompClient }: MainContentProps & { setMatchResult: (result: any) => void }) => {
+const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult, setMatchResult, userId, sidebarOpen, setSidebarOpen, stompClient, isSettingsOpen, setIsSettingsOpen }: MainContentProps & { setMatchResult: (result: any) => void, isSettingsOpen: boolean, setIsSettingsOpen: (open: boolean) => void }) => {
   const isMobile = useIsMobile();
   const [callWindow, setCallWindow] = useState<{ type: "voice" | "video"; active: boolean } | null>(null);
   const [callWindowPos, setCallWindowPos] = useState({ x: 60, y: 130 });
@@ -34,8 +35,8 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   const dragOffsetRef = useRef<{x:number, y:number}>({x:0,y:0});
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const sessionSubscriptionRef = useRef<any>(null);
+  const { toast } = useToast();
 
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [settings, setSettings] = useState({
@@ -152,7 +153,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 
         // Handle chat closure message from server
         if (msg.messageType === "SYSTEM_END_CHAT" || msg.message_type === "SYSTEM_END_CHAT") {
-          alert("The other user has left the chat.");
+          toast({ title: "Chat Ended", description: "The other user has left the chat." });
           // Clean up match state to return to queue view
           setMatchResult(null);
           // Unsubscribe from this session topic
@@ -213,7 +214,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 
   const handleSendMessage = async (message: string) => {
     if (!matchResult?.session) {
-      alert("No active chat session");
+      toast({ title: "Error", description: "No active chat session" });
       return;
     }
     if (!stompClient.current || !stompClient.current.connected) {
@@ -236,7 +237,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
       console.log('Sending message:', message);
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message');
+      toast({ title: "Error", description: "Failed to send message", variant: "destructive" });
     }
   };
 
@@ -245,7 +246,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   };
 
   const handleVoiceInput = () => {
-    alert("Voice input activated");
+    toast({ title: "Voice Input", description: "Voice input activated" });
   };
 
   const handleMediaUpload = (base64Media: string) => {
@@ -268,19 +269,19 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   };
 
   const handleShowTips = () => {
-    alert("Tips feature coming soon!");
+    toast({ title: "Tips", description: "Tips feature coming soon!" });
     setIsSettingsOpen(false);
   };
 
   const handleClearCache = () => {
-    alert("Cache cleared!");
+    toast({ title: "Success", description: "Cache cleared!" });
     setIsSettingsOpen(false);
   };
 
   const handleApplyFilters = async (newFilters: UserFilters) => {
     setFilters(newFilters);
     const totalSelected = Object.values(newFilters).flat().length;
-    alert(`${totalSelected} filter${totalSelected !== 1 ? 's' : ''} applied!`);
+    toast({ title: "Filters Applied", description: `${totalSelected} filter${totalSelected !== 1 ? 's' : ''} applied!` });
     
     if (totalSelected > 0) {
       await findMatch(newFilters);
@@ -293,34 +294,46 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
         {/* Header */}
         <header className="sticky-top bg-white border-bottom shadow-sm z-3">
           <div className="d-flex align-items-center justify-content-between px-4" style={{ height: '64px' }}>
-            <div className="d-flex align-items-center" style={{ width: '48px' }}>
-              {(isMobile || !sidebarOpen) && (
+            <div className="d-flex align-items-center gap-3">
+              {(isMobile) && (
                 <Button variant="link" className="text-dark p-0" onClick={() => setSidebarOpen(!sidebarOpen)}>
-                  <MoreVertical size={24} />
+                  <PanelLeft size={24} />
                 </Button>
+              )}
+              {matchResult?.matched && (
+                <div className="fw-bold font-playful fs-5 text-dark">
+                  Friend ({matchResult?.filters?.gender?.[0] || '^_^'})
+                </div>
               )}
             </div>
             
-            <h1 className="h5 fw-bold mb-0 position-absolute start-50 translate-middle-x" style={{ color: '#FF6200' }}>ChatMITS</h1>
+            {!matchResult?.matched && (
+              <h1 className="h4 font-brand mb-0 position-absolute start-50 translate-middle-x" style={{ color: '#FF6200' }}>ChatMITS</h1>
+            )}
             
             <div className="d-flex align-items-center gap-2">
               {matchResult?.matched && matchResult.session && (<> 
-                <Button
-                  onClick={handleVoiceCallClick}
-                  variant={callStatus !== 'idle' && !isVideoCall ? "danger" : "outline-secondary"}
-                  size="sm"
-                  disabled={!settings.voiceCall || (callStatus !== 'idle' && isVideoCall)}
-                >
-                  {callStatus !== 'idle' && !isVideoCall ? "End Call" : "Voice Call"}
-                </Button>
-                <Button
-                  onClick={handleVideoCallClick}
-                  variant={callStatus !== 'idle' && isVideoCall ? "danger" : "outline-secondary"}
-                  size="sm"
-                  disabled={!settings.videoCall || (callStatus !== 'idle' && !isVideoCall)}
-                >
-                  {callStatus !== 'idle' && isVideoCall ? "End Call" : "Video Call"}
-                </Button>
+                <Dropdown align="end">
+                  <Dropdown.Toggle variant="outline-secondary" size="sm" className="rounded-pill px-3 d-flex align-items-center border-0 bg-light">
+                    <Phone size={16} className="me-2" style={{ color: '#FF6200' }}/> Call
+                  </Dropdown.Toggle>
+                  <Dropdown.Menu className="shadow-sm border-0 rounded-4 mt-2">
+                    <Dropdown.Item 
+                      onClick={handleVoiceCallClick} 
+                      disabled={!settings.voiceCall || (callStatus !== 'idle' && isVideoCall)}
+                      className="d-flex align-items-center py-2"
+                    >
+                      <Mic size={16} className="me-2" style={{ color: '#FF6200' }} /> {callStatus !== 'idle' && !isVideoCall ? "End Voice Call" : "Voice Call"}
+                    </Dropdown.Item>
+                    <Dropdown.Item 
+                      onClick={handleVideoCallClick} 
+                      disabled={!settings.videoCall || (callStatus !== 'idle' && !isVideoCall)}
+                      className="d-flex align-items-center py-2"
+                    >
+                      <Video size={16} className="me-2 text-success" /> {callStatus !== 'idle' && isVideoCall ? "End Video Call" : "Video Call"}
+                    </Dropdown.Item>
+                  </Dropdown.Menu>
+                </Dropdown>
               </>)}
               <Button
                 variant="light"
@@ -379,11 +392,18 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
           {/* Floating Call Window (When Connected or Calling) */}
           {(callStatus === 'connected' || callStatus === 'calling' || (callStatus === 'ringing' && localStream)) && (
             <div
-              className="position-absolute z-3 rounded-4 bg-dark border shadow-lg overflow-hidden"
-              style={{ top: callWindowPos.y, left: callWindowPos.x, width: callWindowSize.width, height: callWindowSize.height, cursor: 'move', userSelect: 'none' }}
-              onMouseDown={startDragCallWin}
+              className={`position-absolute z-3 rounded-4 bg-dark border shadow-lg overflow-hidden ${isMobile ? 'w-100 h-100 top-0 start-0 rounded-0' : ''}`}
+              style={{ 
+                top: isMobile ? 0 : callWindowPos.y, 
+                left: isMobile ? 0 : callWindowPos.x, 
+                width: isMobile ? '100%' : callWindowSize.width, 
+                height: isMobile ? '100%' : callWindowSize.height, 
+                cursor: isMobile ? 'default' : 'move', 
+                userSelect: 'none' 
+              }}
+              onMouseDown={!isMobile ? startDragCallWin : undefined}
             >
-              <div className="h-100" style={{ pointerEvents: isDraggingCallWin ? 'none' : 'auto' }}>
+              <div className="h-100" style={{ pointerEvents: isDraggingCallWin && !isMobile ? 'none' : 'auto' }}>
                 <CallInterface 
                   localStream={localStream}
                   remoteStream={remoteStream}
@@ -397,21 +417,23 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               </div>
 
               {/* Resize handle */}
-              <div
-                className="position-absolute bottom-0 end-0"
-                onMouseDown={startResizeCallWin}
-                style={{
-                  width: '20px', height: '20px', cursor: 'nwse-resize', zIndex: 10,
-                  borderBottom: '3px solid #FF6200', borderRight: '3px solid #FF6200', borderBottomRightRadius: '12px'
-                }}
-              />
+              {!isMobile && (
+                <div
+                  className="position-absolute bottom-0 end-0"
+                  onMouseDown={startResizeCallWin}
+                  style={{
+                    width: '20px', height: '20px', cursor: 'nwse-resize', zIndex: 10,
+                    borderBottom: '3px solid #FF6200', borderRight: '3px solid #FF6200', borderBottomRightRadius: '12px'
+                  }}
+                />
+              )}
             </div>
           )}
           
           <audio ref={ringtoneRef} src="/ringtone.mp3" preload="auto" style={{display:'none'}} />
           
           {matchResult?.matched && matchResult.session ? (
-            <div className="w-100 max-w-4xl d-flex flex-column h-100 bg-light rounded-4 border shadow-sm my-3" style={{ maxHeight: 'calc(100vh - 120px)', maxWidth: '900px' }}>
+            <div className="w-100 max-w-4xl d-flex flex-column h-100 bg-white my-3" style={{ maxHeight: 'calc(100vh - 120px)', maxWidth: '900px' }}>
               <div className="flex-grow-1 overflow-hidden">
                 <ChatInterface
                   sessionId={matchResult.session.id}
@@ -427,7 +449,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                   }}
                 />
               </div>
-              <div className="p-4 border-top bg-white rounded-bottom-4">
+              <div className="p-4 bg-white">
                 <ChatInput
                    onSendMessage={handleSendMessage}
                    onVoiceInput={handleVoiceInput}
@@ -439,7 +461,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
             </div>
           ) : (
             <div className="w-100 max-w-2xl text-center my-auto" style={{ maxWidth: '600px' }}>
-              <h2 className="display-6 fw-bold text-dark mb-5">
+              <h2 className="display-6 fw-bold text-dark mb-5 font-playful">
                 Future of Social Interaction.<br />
               </h2>
 
@@ -447,9 +469,11 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                 {matchResult?.queuePosition && (
                   <p className="text-secondary small mb-1">Queue position: {matchResult.queuePosition}</p>
                 )}
-                <p className="fs-5 fw-medium ps-2" style={{ color: '#FF6200' }}>
-                  {isSearching ? "Searching for match..." : "anonymous user"}
-                </p>
+                {isSearching && (
+                  <p className="fs-5 fw-medium ps-2 font-playful" style={{ color: '#FF6200' }}>
+                    Searching for match...
+                  </p>
+                )}
               </div>
               
               <div className="mb-4">
@@ -475,6 +499,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
 
 const Index = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [filters, setFilters] = useState<UserFilters>({
     myGender: undefined,
     gender: [],
@@ -489,6 +514,36 @@ const Index = () => {
   const { loading: statusLoading } = usePlatformStatus();
   const isMobile = useIsMobile();
 
+  const { toast, toasts, dismiss } = useToast();
+
+  const [touchStartX, setTouchStartX] = useState<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStartX(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartX === null || !isMobile) return;
+    const currentX = e.targetTouches[0].clientX;
+    const diff = currentX - touchStartX;
+    
+    // Swipe right to open sidebar
+    if (diff > 50 && !sidebarOpen) {
+      setSidebarOpen(true);
+      setTouchStartX(null);
+    }
+    
+    // Swipe left to open settings
+    if (diff < -50 && !isSettingsOpen) {
+      setIsSettingsOpen(true);
+      setTouchStartX(null);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStartX(null);
+  };
+
   if (statusLoading) return null;
 
   // Need a way to manually reset the match result locally when chat is closed
@@ -497,7 +552,7 @@ const Index = () => {
 
   const handleNewChat = async () => {
     if (Object.values(filters).flat().length === 0) {
-      alert("Please set your interest filters first");
+      toast({ title: "Filters Required", description: "Please set your interest filters first", variant: "destructive" });
       return;
     }
     
@@ -519,13 +574,30 @@ const Index = () => {
   };
 
   return (
-    <div className="d-flex vh-100 vw-100 overflow-hidden bg-light position-relative">
-      {(sidebarOpen || !isMobile) && (
+    <div 
+      className="d-flex vh-100 vw-100 overflow-hidden bg-light position-relative"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {isMobile && sidebarOpen && (
         <div 
-          className={`h-100 flex-shrink-0 ${isMobile ? 'position-absolute top-0 start-0 w-100 shadow-lg' : ''}`} 
-          style={{ zIndex: 1050 }}
-        >
-           <AppSidebar 
+          className="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-25" 
+          style={{ zIndex: 1040 }} 
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <div 
+        className={`h-100 flex-shrink-0 ${isMobile ? 'position-absolute top-0 start-0 shadow-lg' : 'border-end'}`} 
+        style={{ 
+          zIndex: 1050, 
+          width: isMobile ? '85vw' : '300px', 
+          transition: 'transform 0.3s ease-out',
+          transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
+          backgroundColor: '#f8f9fa'
+        }}
+      >
+         <AppSidebar 
             onNewChat={handleNewChat}
             onOpenFilters={() => {}}
             isTimeWindowActive={true}
@@ -534,7 +606,6 @@ const Index = () => {
             onClose={isMobile ? () => setSidebarOpen(false) : undefined}
           />
         </div>
-      )}
       <MainContent 
         filters={filters}
         setFilters={setFilters}
@@ -550,7 +621,25 @@ const Index = () => {
         sidebarOpen={sidebarOpen}
         setSidebarOpen={setSidebarOpen}
         stompClient={stompClient}
+        isSettingsOpen={isSettingsOpen}
+        setIsSettingsOpen={setIsSettingsOpen}
       />
+
+      {/* Toasts overlay */}
+      <ToastContainer position="bottom-end" className="p-4" style={{ zIndex: 9999, position: 'fixed' }}>
+        {toasts.map((t: any) => (
+          <Toast key={t.id} show={t.open !== false} onClose={() => dismiss(t.id)} delay={3000} autohide bg={t.variant === 'destructive' ? 'danger' : 'white'} className="shadow-lg mb-3 rounded-4 border-0">
+            {t.title && (
+              <Toast.Header closeButton={false} className={`border-0 rounded-top-4 ${t.variant === 'destructive' ? 'bg-danger text-white' : 'bg-white'}`}>
+                <strong className="me-auto font-playful">{t.title}</strong>
+              </Toast.Header>
+            )}
+            <Toast.Body className={t.variant === 'destructive' ? 'text-white' : 'text-dark fw-medium'}>
+              {t.description}
+            </Toast.Body>
+          </Toast>
+        ))}
+      </ToastContainer>
     </div>
   );
 };

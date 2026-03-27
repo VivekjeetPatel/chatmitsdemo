@@ -28,23 +28,23 @@ export const SettingsPanel = ({
 }: SettingsPanelProps) => {
   return (
     <Offcanvas show={isOpen} onHide={onClose} placement="end" style={{ width: '320px' }}>
-      <Offcanvas.Header closeButton>
-        <Offcanvas.Title className="fw-bold" style={{ color: '#FF6200' }}>Settings</Offcanvas.Title>
-      </Offcanvas.Header>
       <Offcanvas.Body className="d-flex flex-column gap-3">
+      <Offcanvas.Header closeButton>
+        <Offcanvas.Title className="fw-bold" style={{ color: '#FF6200' }}>Your Actions</Offcanvas.Title>
+      </Offcanvas.Header>
         <Button variant="light" className="w-100 text-start d-flex align-items-center gap-3 p-3 rounded-3" onClick={onShowTips}>
           <Lightbulb size={20} style={{ color: '#FF6200' }} />
-          <span className="fw-medium">Tips</span>
+          <span className="fw-medium">Tips for you</span>
         </Button>
 
         <Button variant="light" className="w-100 text-start d-flex align-items-center gap-3 p-3 rounded-3" onClick={onClearCache}>
           <RotateCcw size={20} style={{ color: '#FF6200' }} />
-          <span className="fw-medium">Clear cache</span>
+          <span className="fw-medium">Clear your cache</span>
         </Button>
 
         <Button variant="light" className="w-100 text-start d-flex align-items-center gap-3 p-3 rounded-3" onClick={onShowFeedback}>
           <MessageSquare size={20} style={{ color: '#FF6200' }} />
-          <span className="fw-medium">Feedback</span>
+          <span className="fw-medium">Your feedback</span>
         </Button>
 
         <hr className="my-2" />
@@ -64,7 +64,7 @@ export const SettingsPanel = ({
 
         {/* AI Mode */}
         <div className="d-flex justify-content-between align-items-center">
-          <span className="fw-bold text-secondary small">AI mode</span>
+          <span className="fw-bold text-secondary small">AI mode (coming soon)</span>
           <Form.Check 
             type="switch" 
             id="ai-mode-switch" 
@@ -75,7 +75,7 @@ export const SettingsPanel = ({
 
         {/* Voice Call */}
         <div className="d-flex justify-content-between align-items-center">
-          <span className="fw-bold text-secondary small">Voice call</span>
+          <span className="fw-bold text-secondary small">Block voice call</span>
           <Form.Check 
             type="switch" 
             id="voice-call-switch" 
@@ -86,7 +86,7 @@ export const SettingsPanel = ({
 
         {/* Video Call */}
         <div className="d-flex justify-content-between align-items-center">
-          <span className="fw-bold text-secondary small">Video call</span>
+          <span className="fw-bold text-secondary small">Block video call</span>
           <Form.Check 
             type="switch" 
             id="video-call-switch" 
