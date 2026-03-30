@@ -15,8 +15,8 @@ COPY --from=build /app/target/chatmits-backend-0.0.1-SNAPSHOT.jar app.jar
 # Expose the port the backend runs on
 EXPOSE 8080
 
-# Environment variables for production tuning
-ENV JAVA_OPTS="-Xms1024m -Xmx2048m"
+# Environment variables for Render Free Tier (512MB RAM Limit)
+ENV JAVA_OPTS="-Xms256m -Xmx350m -XX:+UseSerialGC -Xss512k"
 
 # Command to run the application
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]
