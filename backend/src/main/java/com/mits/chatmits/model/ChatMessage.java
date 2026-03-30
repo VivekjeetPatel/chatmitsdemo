@@ -17,7 +17,7 @@ public class ChatMessage {
     @Column(name = "sender_id")
     private String senderId;
 
-    @Column(columnDefinition = "LONGTEXT")
+    @Column(length = 1000000)
     private String message;
 
     @Column(name = "message_type")
