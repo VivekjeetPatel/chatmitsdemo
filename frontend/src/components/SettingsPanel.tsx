@@ -1,5 +1,6 @@
 import { Lightbulb, RotateCcw, MessageSquare, Moon, Sun } from "lucide-react";
 import { Button, Offcanvas, Form } from "react-bootstrap";
+import { useIsMobile } from "../hooks/use-mobile";
 // Note: If you want true Next Themes support, keep the context provider setup in main.tsx or App.tsx 
 // since we removed the Context, we can mock or remove theme toggling but I'll keep the buttons for UI structure.
 
@@ -30,13 +31,15 @@ export const SettingsPanel = ({
   isDarkMode,
   onToggleDarkMode
 }: SettingsPanelProps) => {
+  const isMobile = useIsMobile();
+
   return (
     <Offcanvas 
       show={isOpen} 
       onHide={onClose} 
       placement="end" 
       style={{ 
-        width: '320px',
+        width: isMobile ? '85vw' : '300px',
         backgroundColor: 'var(--bg-primary)',
         color: 'var(--text-primary)'
       }}

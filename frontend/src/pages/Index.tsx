@@ -45,8 +45,8 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [settings, setSettings] = useState({
     aiMode: false,
-    voiceCall: true,
-    videoCall: true,
+    voiceCall: false,
+    videoCall: false,
   });
   const [callWindowSize, setCallWindowSize] = useState({ width: 288, height: 245 });
   const [isResizingCallWin, setIsResizingCallWin] = useState(false);
@@ -249,8 +249,23 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
     setSettings(prev => ({ ...prev, [key]: value }));
   };
 
-  const handleVoiceInput = () => {
-    toast({ title: "Voice Input", description: "Voice input activated" });
+  const handleVoiceSend = (base64Audio: string) => {
+    if (!matchResult?.session || !stompClient.current || !stompClient.current.connected) return;
+    try {
+      const chatMessage = {
+        sessionId: matchResult.session.id,
+        senderId: userId,
+        message: base64Audio,
+        messageType: "AUDIO"
+      };
+      
+      stompClient.current.publish({
+        destination: "/app/chat.sendMessage",
+        body: JSON.stringify(chatMessage)
+      });
+    } catch (error) {
+      console.error('Error sending audio:', error);
+    }
   };
 
   const handleMediaUpload = (base64Media: string) => {
@@ -297,9 +312,9 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
       <div className="flex-grow-1 d-flex flex-column vh-100 overflow-hidden" style={{ backgroundColor: 'var(--bg-primary)' }}>
         {/* Header */}
         <header className="sticky-top border-bottom shadow-sm z-3" style={{ backgroundColor: 'var(--bg-primary)' }}>
-          <div className="d-flex align-items-center justify-content-between px-4" style={{ height: '64px' }}>
+          <div className="d-flex align-items-center justify-content-between px-4" style={{ height: '4rem' }}>
             <div className="d-flex align-items-center gap-3">
-              {(isMobile) && (
+              {((isMobile || !sidebarOpen)) && (
                 <Button variant="link" className="text-dark p-0" onClick={() => setSidebarOpen(!sidebarOpen)}>
                   <PanelLeft size={24} />
                 </Button>
@@ -324,14 +339,14 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
                   <Dropdown.Menu className="shadow-sm border-0 rounded-4 mt-2">
                     <Dropdown.Item 
                       onClick={handleVoiceCallClick} 
-                      disabled={!settings.voiceCall || (callStatus !== 'idle' && isVideoCall)}
+                      disabled={settings.voiceCall || (callStatus !== 'idle' && isVideoCall)}
                       className="d-flex align-items-center py-2"
                     >
                       <Mic size={16} className="me-2" style={{ color: 'var(--accent-color)' }} /> {callStatus !== 'idle' && !isVideoCall ? "End Voice Call" : "Voice Call"}
                     </Dropdown.Item>
                     <Dropdown.Item 
                       onClick={handleVideoCallClick} 
-                      disabled={!settings.videoCall || (callStatus !== 'idle' && !isVideoCall)}
+                      disabled={settings.videoCall || (callStatus !== 'idle' && !isVideoCall)}
                       className="d-flex align-items-center py-2"
                     >
                       <Video size={16} className="me-2 text-success" /> {callStatus !== 'idle' && isVideoCall ? "End Video Call" : "Video Call"}
@@ -387,7 +402,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
           {/* Incoming Call Overlay */}
           {callStatus === 'ringing' && !localStream && (
              <div className="position-absolute z-3 rounded-4 border shadow-lg d-flex flex-column align-items-center justify-content-center p-4"
-                  style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 300, zIndex: 9999, backgroundColor: 'var(--bg-primary)' }}>
+                  style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '18.75rem', zIndex: 9999, backgroundColor: 'var(--bg-primary)' }}>
                <h4 className="mb-3">Incoming {isVideoCall ? 'Video' : 'Voice'} Call</h4>
                <div className="d-flex gap-3">
                  <Button variant="success" onClick={answerCall}>Accept</Button>
@@ -440,7 +455,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
           <audio ref={ringtoneRef} src="/ringtone.mp3" preload="auto" style={{display:'none'}} />
           
           {matchResult?.matched && matchResult.session ? (
-            <div className="w-100 max-w-4xl d-flex flex-column h-100 my-3" style={{ maxHeight: 'calc(100vh - 120px)', maxWidth: '900px' }}>
+            <div className="w-100 max-w-4xl d-flex flex-column h-100 my-3" style={{ maxHeight: 'calc(100vh - 7.5rem)', maxWidth: '56.25rem' }}>
               <div className="flex-grow-1 overflow-hidden">
                 <ChatInterface
                   sessionId={matchResult.session.id}
@@ -459,7 +474,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               <div className="p-4" style={{ backgroundColor: 'var(--bg-primary)' }}>
                 <ChatInput
                    onSendMessage={handleSendMessage}
-                   onVoiceInput={handleVoiceInput}
+                   onVoiceSend={handleVoiceSend}
                    onMediaUpload={handleMediaUpload}
                    placeholder="Say something nicer..."
                    disabled={!matchResult?.matched}
@@ -467,7 +482,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               </div>
             </div>
           ) : (
-            <div className="w-100 max-w-2xl text-center my-auto" style={{ maxWidth: '600px' }}>
+            <div className="w-100 max-w-2xl text-center my-auto" style={{ maxWidth: '37.5rem' }}>
               <h2 className="display-6 fw-bold text-dark mb-5 font-playful">
                 Future of Social Interaction.<br />
               </h2>
@@ -486,7 +501,7 @@ const MainContent = ({ filters, setFilters, findMatch, isSearching, matchResult,
               <div className="mb-4">
                 <ChatInput
                   onSendMessage={handleSendMessage}
-                  onVoiceInput={handleVoiceInput}
+                  onVoiceSend={handleVoiceSend}
                   onMediaUpload={handleMediaUpload}
                   placeholder="Say something nicer..."
                   disabled={!matchResult?.matched}
@@ -602,6 +617,9 @@ const Index = () => {
       return;
     }
     
+    // Automatically close sidebar when clicking new chat
+    setSidebarOpen(false);
+
     // If we are currently matched, properly notify the server we are closing the chat.
     if (matchResult?.matched && matchResult.session && stompClient.current?.connected) {
        const chatMessage = {
@@ -638,11 +656,12 @@ const Index = () => {
         className={`h-100 flex-shrink-0 ${isMobile ? 'position-absolute top-0 start-0 shadow-lg' : 'border-end'}`} 
         style={{ 
           zIndex: 1050, 
-          width: isMobile ? '85vw' : '300px', 
-          transition: 'transform 0.3s ease-out',
+          width: isMobile ? '85vw' : (sidebarOpen ? '300px' : '0px'), 
+          transition: 'transform 0.3s ease-out, width 0.3s ease-out',
           transform: isMobile ? (sidebarOpen ? 'translateX(0)' : 'translateX(-100%)') : 'none',
           backgroundColor: 'var(--bg-secondary)',
-          borderColor: 'var(--border-color)'
+          borderColor: 'var(--border-color)',
+          overflow: 'hidden'
         }}
       >
          <AppSidebar 
@@ -651,7 +670,7 @@ const Index = () => {
             isTimeWindowActive={true}
             filters={filters}
             onFiltersChange={setFilters}
-            onClose={isMobile ? () => setSidebarOpen(false) : undefined}
+            onClose={() => setSidebarOpen(false)}
           />
         </div>
       <MainContent 

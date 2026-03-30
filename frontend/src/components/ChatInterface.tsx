@@ -112,6 +112,10 @@ export const ChatInterface = ({
                 >
                   {type === 'IMAGE' ? (
                      <img src={msg.message} alt="media payload" className="img-fluid rounded-3 shadow-sm" style={{ maxHeight: '250px', objectFit: 'cover' }} />
+                  ) : type === 'AUDIO' ? (
+                     <div className="d-flex align-items-center">
+                       <audio controls src={msg.message} style={{ maxWidth: '250px', height: '40px', outline: 'none' }} />
+                     </div>
                   ) : (
                     <p className="mb-0 fs-6">{msg.message}</p>
                   )}

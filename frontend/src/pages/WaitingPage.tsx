@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Clock, Lock, RefreshCcw } from 'lucide-react';
-import { Button, Container, Row, Col, Card } from 'react-bootstrap';
+import { Clock, RefreshCcw, TrendingUp } from 'lucide-react';
+import { Button, Container, Card } from 'react-bootstrap';
 
 const WaitingPage = () => {
   const [timeLeft, setTimeLeft] = useState<{ hours: number; minutes: number; seconds: number } | null>(null);
-  const [openingTime, setOpeningTime] = useState<string>('8:00 PM');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -19,18 +18,15 @@ const WaitingPage = () => {
           navigate('/');
         }
         
-        const config = data.config;
-        setOpeningTime(config.dailyStartTime);
-        
         // Mock countdown for now
-        setTimeLeft({ hours: 5, minutes: 42, seconds: 18 });
+        setTimeLeft({ hours: 0, minutes: 12, seconds: 45 });
       } catch (error) {
         console.error('Failed to fetch platform status', error);
       }
     };
 
     fetchStatus();
-    const interval = setInterval(fetchStatus, 30000); 
+    const interval = setInterval(fetchStatus, 15000); 
     
     const timer = setInterval(() => {
       setTimeLeft(prev => {
@@ -54,14 +50,14 @@ const WaitingPage = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      backgroundColor: '#020617',
-      color: 'white',
+      backgroundColor: 'var(--bg-primary)',
+      color: 'var(--text-primary)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '20px',
-      fontFamily: 'system-ui, sans-serif'
+      fontFamily: "'Nunito', sans-serif"
     }}>
       <Container className="text-center" style={{ maxWidth: '500px' }}>
         <div style={{
@@ -71,77 +67,86 @@ const WaitingPage = () => {
         }}>
           <div style={{
             position: 'absolute',
-            inset: '-10px',
-            background: 'linear-gradient(to right, #2563eb, #06b6d4)',
+            inset: '-15px',
+            background: 'var(--accent-color)',
             borderRadius: '50%',
-            filter: 'blur(20px)',
-            opacity: 0.3
+            filter: 'blur(30px)',
+            opacity: 0.15
           }} />
           <div style={{
             position: 'relative',
-            background: '#0f172a',
+            background: 'white',
             padding: '2rem',
             borderRadius: '50%',
             display: 'inline-flex',
-            border: '1px solid #1e293b'
+            boxShadow: '0 10px 40px rgba(255, 98, 0, 0.1)',
+            border: '2px solid rgba(255, 98, 0, 0.05)'
           }}>
-            <Lock size={48} color="#60a5fa" />
+            <TrendingUp size={48} color="var(--accent-color)" />
           </div>
         </div>
 
-        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Platform is closed</h1>
-        <p style={{ color: '#94a3b8', fontSize: '1.25rem', fontStyle: 'italic', marginBottom: '2.5rem' }}>We'll be back soon!</p>
+        <h1 style={{ fontSize: '2.5rem', fontWeight: 'bold', marginBottom: '0.75rem', color: 'var(--text-primary)', fontFamily: "'Baloo 2', cursive" }}>
+          We're Scaling Up!
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '1.25rem', marginBottom: '3rem', maxWidth: '400px', margin: '0 auto 3rem' }}>
+          We're expanding our capacity to handle the amazing amount of love you're showing. We'll be ready for you in a moment!
+        </p>
 
         <Card style={{
-          background: 'rgba(15, 23, 42, 0.5)',
-          border: '1px solid #1e293b',
-          borderRadius: '1.5rem',
-          padding: '2rem',
-          backdropFilter: 'blur(8px)',
-          marginBottom: '2rem'
+          background: 'white',
+          border: '1px solid var(--border-color)',
+          borderRadius: '2rem',
+          padding: '2.5rem',
+          boxShadow: '0 20px 60px rgba(0, 0, 0, 0.04)',
+          marginBottom: '2.5rem'
         }}>
-          <div style={{ marginBottom: '1.5rem' }}>
-            <p style={{ color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.875rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-              Today's Session Starts At
-            </p>
-            <p style={{ fontSize: '2rem', fontWeight: 'bold', color: '#60a5fa', fontFamily: 'monospace' }}>
-              {openingTime}
-            </p>
+          <div style={{ marginBottom: '2rem' }}>
+             <p style={{ color: 'var(--text-primary)', fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem' }}>
+               Quick Tip
+             </p>
+             <p style={{ color: 'var(--accent-color)', fontSize: '1.25rem', fontWeight: 'bold' }}>
+               Best time to join the platform is 9 PM
+             </p>
           </div>
 
-          <div style={{ height: '1px', background: '#1e293b', margin: '1.5rem 0' }} />
+          <div style={{ height: '1px', background: 'var(--border-color)', margin: '2rem 0' }} />
 
           <div>
-            <p style={{ color: '#64748b', fontSize: '0.875rem', fontWeight: '500', marginBottom: '1rem' }}>Please visit after:</p>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1.25rem' }}>
+              Estimated cooldown
+            </p>
             <div className="d-flex justify-content-center align-items-center gap-3">
               <TimeBlock label="Hrs" value={timeLeft ? formatTime(timeLeft.hours) : '--'} />
-              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1e293b' }}>:</div>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--border-color)', marginTop: '-1.5rem' }}>:</div>
               <TimeBlock label="Min" value={timeLeft ? formatTime(timeLeft.minutes) : '--'} />
-              <div style={{ fontSize: '2.5rem', fontWeight: 'bold', color: '#1e293b' }}>:</div>
+              <div style={{ fontSize: '2rem', fontWeight: 'bold', color: 'var(--border-color)', marginTop: '-1.5rem' }}>:</div>
               <TimeBlock label="Sec" value={timeLeft ? formatTime(timeLeft.seconds) : '--'} />
             </div>
           </div>
         </Card>
 
         <Button 
-          variant="outline-light" 
+          variant="primary" 
           onClick={() => window.location.reload()}
           style={{
-            borderColor: '#334155',
-            color: '#94a3b8',
-            padding: '0.75rem 2rem',
-            borderRadius: '0.75rem',
+            backgroundColor: 'var(--accent-color)',
+            borderColor: 'var(--accent-color)',
+            padding: '1rem 2.5rem',
+            borderRadius: '50px',
             display: 'inline-flex',
             alignItems: 'center',
-            gap: '0.5rem'
+            gap: '0.75rem',
+            fontWeight: 'bold',
+            boxShadow: '0 10px 25px rgba(255, 98, 0, 0.25)'
           }}
         >
-          <RefreshCcw size={18} />
-          Refresh Status
+          <RefreshCcw size={20} />
+          Try Now
         </Button>
 
-        <p style={{ color: '#475569', fontSize: '0.75rem', marginTop: '2rem' }}>
-          Platform availability is scheduled to ensure a high-quality matchmaking experience.
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginTop: '3rem', opacity: 0.7 }}>
+          Our server scales based on demand to keep the experience smooth for everyone.
         </p>
       </Container>
     </div>
@@ -151,18 +156,18 @@ const WaitingPage = () => {
 const TimeBlock = ({ label, value }: { label: string; value: string }) => (
   <div className="d-flex flex-column align-items-center">
     <div style={{
-      background: 'rgba(30, 41, 59, 0.8)',
-      border: '1px solid #334155',
-      borderRadius: '1rem',
+      background: 'var(--bg-secondary)',
+      borderRadius: '1.25rem',
       padding: '0.75rem 1rem',
-      minWidth: '70px',
-      fontSize: '2rem',
+      minWidth: '65px',
+      fontSize: '1.75rem',
       fontWeight: 'bold',
+      color: 'var(--text-primary)',
       fontFamily: 'monospace'
     }}>
       {value}
     </div>
-    <span style={{ fontSize: '0.625rem', textTransform: 'uppercase', color: '#64748b', fontWeight: 'bold', marginTop: '0.5rem' }}>
+    <span style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--text-secondary)', fontWeight: '800', marginTop: '0.5rem' }}>
       {label}
     </span>
   </div>
